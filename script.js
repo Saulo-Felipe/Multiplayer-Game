@@ -1,68 +1,17 @@
+import createGame from './game.js'
+
 console.log(` [ Feito por Saulo Felipe ] `)
 
 const screen = document.querySelector('#screen')
-context = screen.getContext('2d')
-
-
-function createGame() {
-
-	const state = {
-		players: {
-			'player1': { x: 0, y: 0 },
-			'player2': { x: 5, y: 5 }
-		},
-		fruits: {
-			'fruit1': { x: 2, y: 2 }
-		}
-	}
-
-	function movePlayer(command) {
-
-		const keyPressed = command.keyPressed
-		const player = state.players[command.playerId]
-
-		const aceptedMoves = {
-			ArrowUp(player) {
-				
-			}
-		}
-
-		if (keyPressed === 'ArrowUp' && player.y > 0) {
-			player.y -= 1
-			return
-		}
-
-		if (keyPressed === 'ArrowDown' && player.y < 9) {
-			player.y += 1
-			return
-		}
-
-		if (keyPressed === 'ArrowLeft' && player.x > 0) {
-			player.x -= 1
-			return
-		} 
-
-		if (keyPressed === 'ArrowRight' && player.x < 9) {
-			player.x += 1
-			return
-		}
-	}
-
-	return {
-		movePlayer,
-		state
-	}
-
-}
+const context = screen.getContext('2d')
 
 const game = createGame()
 const currentPlayer = 'player1'
 
 
 document.addEventListener('keydown', (e) => {
-	game.movePlayer({keyPressed: e.key, playerId: currentPlayer})
+	game.movePlayer({ keyPressed: e.key, playerId: currentPlayer })
 })
-
 
 renderScreen()
 function renderScreen () {
@@ -83,9 +32,6 @@ function renderScreen () {
 		context.fillRect(fruit.x, fruit.y, 1, 1)
 	}
 
-
-
 	requestAnimationFrame(renderScreen)
-
 }
 
