@@ -8,18 +8,11 @@ export default function createGame() {
 			height: 10
 		}
 	}
-	
-	addPlayer({ playerId: 'player1', playerX: 0, playerY: 0 })
-	addPlayer({ playerId: 'player2', playerX: 2, playerY: 2 })
-	addFruit({ fruitId: 2, fruitX: 4, fruitY: 4 })
-	addFruit({ fruitId: 3, fruitX: 6, fruitY: 2 })
-	addFruit({ fruitId: 4, fruitX: 6, fruitY: 9 })
-	
 
 	function addPlayer(command) {
 		const playerId = command.playerId
-		const playerX = command.playerX
-		const playerY = command.playerY
+		const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * state.screen.width)
+		const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * state.screen.height)
 
 		state.players[playerId] = {
 			x: playerX,

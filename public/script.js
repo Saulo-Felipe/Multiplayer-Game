@@ -14,3 +14,15 @@ document.addEventListener('keydown', (e) => {
 })
 
 renderScreen(context, game)
+
+const socket = io()
+
+socket.on('connect', () => {
+	const playerId = socket.id
+	console.log(`Player connected on Client with id: ${playerId}`)
+})
+
+socket.on('setup', (state) => {
+	console.log('Recebendo mensagem do backend')
+	console.log(state)
+})
