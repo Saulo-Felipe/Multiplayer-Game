@@ -1,0 +1,14 @@
+{
+  "name": "Multiplayer-Game",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "repository": "https://github.com/Saulo-Felipe/Multiplayer-Game.git",
+  "author": "Saulo-Felipe <saulofelipe234567@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12",
+    "socket.io": "^4.1.3"
+  }
+}
