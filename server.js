@@ -9,6 +9,10 @@ const io = new Server(server)
 
 app.use(express.static(path.join(__dirname, 'public')))
 
+app.get('*', (request, response) => {
+    response.sendFile(path.join(__dirname, "public", "index.html"))
+})
+
 io.on('connection', (socket) => {
     socket.emit('user_id', {id: socket.id})
 

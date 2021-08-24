@@ -1,4 +1,4 @@
-const socket = io('https://8081-indigo-gazelle-ivr9yout.ws-us16.gitpod.io')
+const socket = io('https://multiplayer-game-saulo.herokuapp.com')
 
 socket.on('connect', () => {
     console.log('Conected!')
