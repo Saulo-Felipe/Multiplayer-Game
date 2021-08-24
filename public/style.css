@@ -1,0 +1,6 @@
+canvas {
+    border: solid 3px rgba(128, 128, 128, 0.486);
+    width: 500px;
+    height: 500px;
+    image-rendering: pixelated;
+}
