@@ -1,4 +1,4 @@
-const socket = io('https://multiplayer-game-saulo.herokuapp.com')
+const socket = io('https://8081-indigo-gazelle-ivr9yout.ws-us16.gitpod.io')
 
 socket.on('connect', () => {
     console.log('Conected!')
@@ -11,13 +11,14 @@ socket.on('user_id', (id) => {
 
 function startGame(idUser) {
     document.querySelector('body').addEventListener('keydown', handleKeyPressed)
+    const gameScreen = document.querySelector('canvas')
+    const context = gameScreen.getContext('2d')
 
-    var currentPlayer = idUser
+    const currentPlayer = idUser
     console.log('Seu id de jogador: ', currentPlayer)
 
     const game = {
         players: {
-            'teste': [{playerId: currentPlayer, x: 2, y: 2}]
         },
         foods: {
             x: 2,
@@ -25,9 +26,9 @@ function startGame(idUser) {
         }
     }
     addPlayer(currentPlayer)
-    
+
     const player = game.players[currentPlayer]
-    
+
     var automaticMoveDirection = "ArrowRight"
     
     function eatFood() { // collision between snake and food
@@ -48,8 +49,8 @@ function startGame(idUser) {
     }
     
     function addFruit(newPosition) {
-        var x = Math.floor(Math.random() * 24 + 1)
-        var y = Math.floor(Math.random() * 24 + 1)
+        var x = Math.floor(Math.random() * gameScreen.width)
+        var y = Math.floor(Math.random() * gameScreen.height)
         
         if (typeof game.foods.x === 'undefined') {
 
@@ -111,17 +112,18 @@ function startGame(idUser) {
     }
     
     function checkWallCollision() {
-        if (player[0].x > 24) // Colisão Right
-            player[0].x -= 25
+
+        if (player[0].x >= gameScreen.width) // Colisão Right
+            player[0].x -= gameScreen.width
     
         if (player[0].x < 0) // Colisão Left
-            player[0].x += 25
+            player[0].x += gameScreen.width
     
-        if (player[0].y > 24) // Colisão Bottom
-            player[0].y -= 25
+        if (player[0].y >= gameScreen.height) // Colisão Bottom
+            player[0].y -= gameScreen.height
     
         if (player[0].y < 0) // Colisão Top
-            player[0].y += 25
+            player[0].y += gameScreen.height
     }
     
     
@@ -136,8 +138,8 @@ function startGame(idUser) {
                         console.log('Colisão')
                     }
                 }
-    
             }
+
         }
     }
     
@@ -160,13 +162,14 @@ function startGame(idUser) {
     socket.on('move_players', (state) => { // Recebe os movimentos dos outros players
         game.players[state[0].playerId] = state
     })
+
+    socket.on('player_disconnect', (id) => {
+        delete game.players[id.id]
+    })
     
     setInterval(() => moveSnake(automaticMoveDirection), 150)
 
     function renderScreen() {
-        const gameScreen = document.querySelector('canvas')
-        const context = gameScreen.getContext('2d')
-        
         context.clearRect(0, 0, gameScreen.width, gameScreen.height)
     
         for (var playerId in game.players) {

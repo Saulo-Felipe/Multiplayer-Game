@@ -24,6 +24,10 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('move_players', state)
     })
 
+    socket.on('disconnect', function() {
+        socket.broadcast.emit('player_disconnect', {id: socket.id})
+    })
+
 })
 
 

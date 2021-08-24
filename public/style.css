@@ -1,6 +1,56 @@
+body {
+    margin: 0;
+}
 canvas {
     border: solid 3px rgba(128, 128, 128, 0.486);
-    width: 500px;
+    width: 1000px;
     height: 500px;
     image-rendering: pixelated;
+    background-color: white;
+}
+.game-container {
+    margin: 0;
+    width: max-content;
+    height: max-content;
+}
+
+/*========= Mobile control ==========*/
+.mobile-control {
+    display: none;
+    position: fixed;
+    top: 98%;
+    left: 99%;
+    transform: translate(-100%, -100%);
+    width: max-content;
+    height: max-content;
+    text-align: center;
+}
+
+
+.btn {
+    padding: 10px;
+    box-sizing: border-box;
+    opacity: 0.6;
+}
+.btn-left {
+    margin-right: 25px;
+}
+.btn-right {
+    margin-left: 25px;
+}
+.center-btn {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.fas {
+    font-size: 2em;;
+}
+
+@media screen and (max-width: 991px) {  
+    .game-container {
+        position: relative;
+    }
+    .mobile-control {
+        display: block;
+    }
 }
