@@ -8,10 +8,6 @@ socket.on('user_id', (id) => {
     startGame(id.id)
 })
 
-socket.on('receive_state', (state) => {
-    console.log(state)
-})
-
 
 function startGame(idUser) {
     document.querySelector('body').addEventListener('keydown', handleKeyPressed)
@@ -56,8 +52,6 @@ function startGame(idUser) {
         var y = Math.floor(Math.random() * 24 + 1)
         
         if (typeof game.foods.x === 'undefined') {
-
-            socket.emit('new-fruit', { x, y })
 
             game.foods.x = x
             game.foods.y = y
@@ -109,7 +103,8 @@ function startGame(idUser) {
             player.splice(-1, 1)
         } else
             return false
-    
+
+        socket.emit('move_players', game.players[currentPlayer])
         checkWallCollision()
     
         return type
@@ -157,17 +152,17 @@ function startGame(idUser) {
         
     }
     
-    socket.on('eat_fruit', (state) => {
-        console.log('Novas posições: ', state)
-
+    socket.on('eat_fruit', (state) => { // Recebe nova posição de fruta
         game.foods.x = state.x
         game.foods.y = state.y
     })
 
-    socket.on('move_players', (state) => {
+    socket.on('move_players', (state) => { // Recebe os movimentos dos outros players
         game.players[state[0].playerId] = state
     })
     
+    setInterval(() => moveSnake(automaticMoveDirection), 150)
+
     function renderScreen() {
         const gameScreen = document.querySelector('canvas')
         const context = gameScreen.getContext('2d')
@@ -188,14 +183,10 @@ function startGame(idUser) {
         context.fillRect(game.foods.x, game.foods.y, 1, 1)
     
         addFruit()
-        
-        moveSnake(automaticMoveDirection)
-    
+            
         checkPlayerCollision()
 
-        socket.emit('move_players', game.players[currentPlayer])
-
-        setTimeout(() => renderScreen(), 150)
+        requestAnimationFrame(renderScreen)
     }
     renderScreen()
 }
