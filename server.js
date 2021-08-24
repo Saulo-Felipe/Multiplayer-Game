@@ -27,4 +27,4 @@ io.on('connection', (socket) => {
 })
 
 
-server.listen(8081, () => console.log('Server is running!'))
+server.listen(process.env.PORT || 8081, () => console.log('Server is running!'))
