@@ -3,10 +3,6 @@ body {
 }
 canvas {
     border: solid 3px rgba(128, 128, 128, 0.486);
-    width: 1000px;
-    height: 500px;
-    image-rendering: pixelated;
-    background-color: white;
 }
 .game-container {
     margin: 0;
