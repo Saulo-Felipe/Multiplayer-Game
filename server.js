@@ -33,12 +33,31 @@ function initialState(type, content) {
 
 io.on('connection', (socket) => {
 
+    
     socket.on('new-connection', (data, callback) => {
 
         callback(false, gameState)
 
     })
 
+    socket.on("disconnect", (reason) => {
+
+        for (var count in gameState) {
+            if (gameState[count].id === socket.id) {
+                delete gameState[count]
+            }
+        }
+        
+        // Clear array
+        var cleanArray = []
+        for (var count in gameState) {
+            if (typeof gameState[count] !== 'undefined')
+                cleanArray.push(gameState[count])
+        }
+        gameState = cleanArray
+
+        socket.broadcast.emit('disconnected', socket.id)
+    });
 
     socket.emit('user_id', {id: socket.id} )
 
