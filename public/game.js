@@ -1,4 +1,4 @@
-const socket = io('http://localhost:8081/')
+const socket = io('https://multiplayer-game-saulo.herokuapp.com/')
 
 socket.on('connect', () => {
     socket.emit("new-connection", true, (error, message) => {
