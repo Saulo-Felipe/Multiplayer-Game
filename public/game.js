@@ -40,6 +40,16 @@ socket.on('enemy-move', (state) => {
   
 })
 
+socket.on('add-gunshot', (gunshoot) => {
+  console.log("bala inimiga recebida")
+  for (var c in allEnemies) {
+    if (allEnemies[c].id === gunshoot.playerID) {
+      console.log("Detectei")
+      allEnemies[c].gunshots.push(gunshoot)
+      break
+    }
+  }
+})
 
 // ------------------------- GAME ------------------------- 
 
@@ -72,11 +82,15 @@ document.addEventListener('keydown', (event) => {
   gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
 
   if (event.code === 'Space') {
-    currentPlayer.gunshots.push({
+    var newGunshoot = {
+      playerID: currentPlayer.id,
       x: currentPlayer.x,
       y: currentPlayer.y,
       angle: currentPlayer.angle
-    })
+    }
+    currentPlayer.gunshots.push(newGunshoot)
+
+    socket.emit('new-gunshot', newGunshoot)
   }
 
 })
@@ -146,6 +160,22 @@ function drawAtScreen() {
     context.drawImage(gameConfigs.tankEnemy, -gameConfigs.tankEnemy.width/2, -gameConfigs.myTank.height/2)
     context.restore()
   }
+  
+  for (var enemy of allEnemies) {
+    for (var gunshot of enemy.gunshots) {
+
+      context.save()
+      context.translate(gunshot.x, gunshot.y)
+      context.rotate(gunshot.angle)
+      context.beginPath()
+      context.fillRect(-2, -5, 4, 10)
+      context.stroke()
+      context.restore()
+  
+      gunshot.x += 5*Math.sin(gunshot.angle)
+      gunshot.y -= 5*Math.cos(gunshot.angle)
+    }
+  }
 
 }
 
@@ -182,6 +212,24 @@ function walkCollision() {
       currentPlayer.gunshots.splice(index, 1)
     }
   }
+
+  // enemy gunshots collision
+  for (enemy of allEnemies) {
+    for (var index in enemy.gunshots) {
+      var gunshot = enemy.gunshots[index]
+  
+      if (
+        (gunshot.x > context.canvas.width) ||
+        (gunshot.x < 0) ||
+        (gunshot.y > context.canvas.height) ||
+        (gunshot.y < 0)
+      ) {
+        console.log("bala inimiga saiu da tela")
+        enemy.gunshots.splice(index, 1)
+      }
+    }
+  
+  }  
   
 }
 

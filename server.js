@@ -47,6 +47,19 @@ io.on('connection', (socket) => {
         GameState.push(player)
     })
 
+    socket.on('new-gunshot', (gunshoot) => {
+
+        for (var c in GameState) {
+            if (GameState[c].id === gunshoot.playerID) {
+
+                GameState[c].gunshots.push(gunshoot)
+                break
+            } 
+        }
+
+        socket.broadcast.emit('add-gunshot', gunshoot)
+    })
+
 })
 
 
