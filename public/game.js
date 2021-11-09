@@ -3,7 +3,43 @@ var socket = io({transports: ['websocket']});
 
 socket.on('connect', () => {
   console.log("Conectado com o id: ", socket.id)
+  
+  currentPlayer.id = socket.id
+
+  socket.emit('new-player', currentPlayer, (response) => {
+    allEnemies = response.allEnemies
+  })
 })
+
+socket.on('add-player', (player) => {
+  console.log('Novo jogador: ', player)
+
+  allEnemies.push(player)
+})
+
+socket.on("disconnected-player", (response) => {
+
+  for (var count in response) { // Remove id do atual player da lista de inimigos
+    if (response[count].id === currentPlayer.id) {
+      response.splice(count, 1)
+      break
+    }
+  }
+
+  allEnemies = response
+})
+
+socket.on('enemy-move', (state) => {
+
+  for (var c in allEnemies) {
+    if (allEnemies[c].id === state.id) {
+      allEnemies[c] = {...allEnemies[c], ...state}
+      break
+    }
+  }
+  
+})
+
 
 // ------------------------- GAME ------------------------- 
 
@@ -28,12 +64,21 @@ var currentPlayer = {
   speed: 0,
   velocity: 4,
   life: 100,
-  shots: [],
+  gunshots: [],
 }
 var allEnemies = []
 
 document.addEventListener('keydown', (event) => {
   gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+
+  if (event.code === 'Space') {
+    currentPlayer.gunshots.push({
+      x: currentPlayer.x,
+      y: currentPlayer.y,
+      angle: currentPlayer.angle
+    })
+  }
+
 })
 document.addEventListener('keyup', (event) => {
   gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
@@ -41,30 +86,74 @@ document.addEventListener('keyup', (event) => {
 
 
 function keysPressed() {
+
+  currentPlayer.directionAngle = 0
+  currentPlayer.speed = 0
+
   if (gameConfigs.keysPressed['ArrowUp'])
-    currentPlayer.y -= currentPlayer.velocity
+    currentPlayer.speed = 4
 
   if (gameConfigs.keysPressed['ArrowDown'])
-    currentPlayer.y += currentPlayer.velocity
-
-  if (gameConfigs.keysPressed['ArrowLeft'])
-    currentPlayer.x -= currentPlayer.velocity
+    currentPlayer.speed = -4
 
   if (gameConfigs.keysPressed['ArrowRight'])
-    currentPlayer.x += currentPlayer.velocity
+    currentPlayer.directionAngle = 4
+
+  if (gameConfigs.keysPressed['ArrowLeft'])
+    currentPlayer.directionAngle = -4
+  
+  if (gameConfigs.keysPressed['ArrowUp'] || gameConfigs.keysPressed['ArrowDown'] || gameConfigs.keysPressed['ArrowRight'] || gameConfigs.keysPressed['ArrowLeft'])
+    Observer('move')
+
+  
+  currentPlayer.angle += currentPlayer.directionAngle*Math.PI/180
+
+  currentPlayer.x += currentPlayer.speed*Math.sin(currentPlayer.angle)
+  currentPlayer.y -= currentPlayer.speed*Math.cos(currentPlayer.angle)
+
 }
 
 function drawAtScreen() {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-  context.drawImage(gameConfigs.myTank, currentPlayer.x, currentPlayer.y)
 
+  // My tank
+  context.save()
+  context.translate(currentPlayer.x, currentPlayer.y)
+  context.rotate(currentPlayer.angle)
+  context.drawImage(gameConfigs.myTank, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2)
+  context.restore()
+
+  // My gunshots
+  for (var gunshot of currentPlayer.gunshots) {
+
+    context.save()
+    context.translate(gunshot.x, gunshot.y)
+    context.rotate(gunshot.angle)
+    context.beginPath()
+    context.fillRect(-2, -5, 4, 10)
+    context.stroke()
+    context.restore()
+
+    gunshot.x += 5*Math.sin(gunshot.angle)
+    gunshot.y -= 5*Math.cos(gunshot.angle)
+  }
   
+  // Enemy tank
+  for (var tank of allEnemies) {
+    context.save()
+    context.translate(tank.x, tank.y)
+    context.rotate(tank.angle)
+    context.drawImage(gameConfigs.tankEnemy, -gameConfigs.tankEnemy.width/2, -gameConfigs.myTank.height/2)
+    context.restore()
+  }
 
 }
 
 function walkCollision() {
-  var playerX = currentPlayer.x
-  var playerY = currentPlayer.y
+
+  // my tank collision
+  var playerX = parseInt(currentPlayer.x-25)
+  var playerY = parseInt(currentPlayer.y-25)
 
   if (playerX+50 > context.canvas.width)
     currentPlayer.x -= currentPlayer.velocity
@@ -77,6 +166,38 @@ function walkCollision() {
 
   if (playerY < 0)
     currentPlayer.y += currentPlayer.velocity
+  
+  
+  // my gunshots collision
+  for (var index in currentPlayer.gunshots) {
+    var gunshot = currentPlayer.gunshots[index]
+
+    if (
+      (gunshot.x > context.canvas.width) ||
+      (gunshot.x < 0) ||
+      (gunshot.y > context.canvas.height) ||
+      (gunshot.y < 0)
+    ) {
+      console.log("bala saiu da tela")
+      currentPlayer.gunshots.splice(index, 1)
+    }
+  }
+  
+}
+
+
+function Observer(type) {
+  console.log("[Enviando State]")
+
+  if (type === 'move')
+    socket.emit('player-move', {
+      id: currentPlayer.id,
+      x: currentPlayer.x,
+      y: currentPlayer.y,
+      angle: currentPlayer.angle,
+      directionAngle: currentPlayer.directionAngle
+    })
+    
 }
 
 
