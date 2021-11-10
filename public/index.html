@@ -10,20 +10,19 @@
 <body>
 
     <div class="game-container">
-        <canvas width="1000px" height="500px"></canvas>
+        <canvas width="1500px" height="500px"></canvas>
     </div>
 
-    <div class="mobile-control">
-        <button class="btn btn-up"><i class="fas fa-arrow-alt-circle-up"></i></button>
-        <div class="center-btn">
-            <button class="btn btn-left"><i class="fas fa-arrow-alt-circle-left"></i></button>
-            <button class="btn btn-right"><i class="fas fa-arrow-alt-circle-right"></i></button>
+    <div id="lateral-container">
+        <div id="chat"></div>
+        <div id="zone-joystick">
+
         </div>
-        <button class="btn btn-down"><i class="fas fa-arrow-alt-circle-down"></i></button>
+    
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="./moviments.js"></script>
+    <script src="./moviments.js" ></script>
     <script src="./game.js"></script>
     <script src="https://kit.fontawesome.com/c9a35cf9ec.js" crossorigin="anonymous"></script>
 </body>

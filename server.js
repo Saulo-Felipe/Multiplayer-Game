@@ -47,17 +47,48 @@ io.on('connection', (socket) => {
         GameState.push(player)
     })
 
-    socket.on('new-gunshot', (gunshoot) => {
+    socket.on('new-gunshot', (gunshot) => {
 
         for (var c in GameState) {
-            if (GameState[c].id === gunshoot.playerID) {
+            if (GameState[c].id === gunshot.playerID) {
 
-                GameState[c].gunshots.push(gunshoot)
+                GameState[c].gunshots.push(gunshot)
                 break
             } 
         }
 
-        socket.broadcast.emit('add-gunshot', gunshoot)
+        socket.broadcast.emit('add-gunshot', gunshot)
+    })
+
+    socket.on('gunshot-collision', (state) => {
+        const playerID = state.playerGunshot
+        const enemyID = state.enemy
+
+        for (var p in GameState) {
+            if (GameState[p].id === playerID) {
+
+                GameState[p].gunshots.splice(state.gunshotPosition, 1)
+                break
+            }
+        }
+
+        for (var c in GameState) {
+            if (GameState[c].id === enemyID) {
+
+                GameState[c].life -= 10
+
+                io.sockets.emit('add-gunshot-collision', {
+                    life: GameState[c].life, 
+                    id: GameState[c].id, 
+                    removeID: playerID, 
+                    gunshotIndex: state.gunshotPosition
+                })
+                
+                break
+            }
+        }
+
+        console.log(state.playerGunshot + ' Atirou em ' + state.enemy)
     })
 
 })

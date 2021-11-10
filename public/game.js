@@ -40,18 +40,45 @@ socket.on('enemy-move', (state) => {
   
 })
 
-socket.on('add-gunshot', (gunshoot) => {
-  console.log("bala inimiga recebida")
+socket.on('add-gunshot', (gunshot) => {
+
   for (var c in allEnemies) {
-    if (allEnemies[c].id === gunshoot.playerID) {
-      console.log("Detectei")
-      allEnemies[c].gunshots.push(gunshoot)
+    if (allEnemies[c].id === gunshot.playerID) {
+
+      allEnemies[c].gunshots.push(gunshot)
       break
     }
   }
 })
 
+socket.on('add-gunshot-collision', (enemy) => {
+  if (enemy.id === currentPlayer.id) {
+    console.log("EU mesmo, atualizando: ", enemy)
+    currentPlayer.life = enemy.life
+  } else {
+    for (var p in allEnemies) {
+      if (allEnemies[p].id === enemy.id) {
+        allEnemies[p].life = enemy.life
+        break
+      }
+    }
+  }
+
+  for (var c in allEnemies) {
+    if (allEnemies[c] === enemy.id) {
+      allEnemies[c].life = enemy.life
+    }
+    console.log('Teste: ', enemy)
+    if (allEnemies[c].id === enemy.removeID) {
+      console.log("ENtrreii")
+      allEnemies[c].gunshots.splice(Number(enemy.gunshotIndex), 1)
+    }
+  }
+
+})
+
 // ------------------------- GAME ------------------------- 
+
 
 const Canvas = document.querySelector('canvas')
 const context = Canvas.getContext('2d')
@@ -82,15 +109,15 @@ document.addEventListener('keydown', (event) => {
   gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
 
   if (event.code === 'Space') {
-    var newGunshoot = {
+    var newGunshot = {
       playerID: currentPlayer.id,
       x: currentPlayer.x,
       y: currentPlayer.y,
       angle: currentPlayer.angle
     }
-    currentPlayer.gunshots.push(newGunshoot)
+    currentPlayer.gunshots.push(newGunshot)
 
-    socket.emit('new-gunshot', newGunshoot)
+    socket.emit('new-gunshot', newGunshot)
   }
 
 })
@@ -161,6 +188,7 @@ function drawAtScreen() {
     context.restore()
   }
   
+  // Enemy gunshots
   for (var enemy of allEnemies) {
     for (var gunshot of enemy.gunshots) {
 
@@ -176,6 +204,25 @@ function drawAtScreen() {
       gunshot.y -= 5*Math.cos(gunshot.angle)
     }
   }
+
+  // my life
+  context.save()
+  context.translate(currentPlayer.x, currentPlayer.y)
+  context.font = "10px Arial";
+  var txtLife = '❤ ' + currentPlayer.life
+  context.fillText(txtLife, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2);
+  context.restore()
+
+  // Enemy lifes
+  for (var enemy of allEnemies) {
+    context.save()
+    context.translate(enemy.x, enemy.y)
+    context.font = "10px Arial";
+    var txtLife = '❤ ' + enemy.life
+    context.fillText(txtLife, -gameConfigs.tankEnemy.width/2, -gameConfigs.tankEnemy.height/2);
+    context.restore()
+  }
+  
 
 }
 
@@ -233,7 +280,6 @@ function walkCollision() {
   
 }
 
-
 function Observer(type) {
   console.log("[Enviando State]")
 
@@ -248,12 +294,67 @@ function Observer(type) {
     
 }
 
+function tanksCollisions() {
+  for (var enemy of allEnemies) {
+    var enemyX = enemy.x-19
+    var enemyY = enemy.y-19
+
+    var playerX = currentPlayer.x-19
+    var playerY = currentPlayer.y-19
+
+    if ((playerX > enemyX-42) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX < enemyX)) { // Esquerda
+      currentPlayer.x -= 4
+    }
+
+    if ((playerX-42 < enemyX) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX > enemyX)) { // Direita
+      currentPlayer.x += 4
+    }
+
+    if ((playerY > enemyY-42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY < enemyY)) { // Cima
+      currentPlayer.y -= 4
+    }
+
+    if ((playerY < enemyY+42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY > enemyY)) { // Baixo
+      currentPlayer.y += 4
+    }
+  }
+}
+
+function gunshotCollision() {
+  for (var enemy of allEnemies) {
+
+    // my gunshots collision
+    for (var c in currentPlayer.gunshots) {
+      var enemyX = enemy.x
+      var enemyY = enemy.y
+
+      var gunshotX = currentPlayer.gunshots[c].x
+      var gunshotY = currentPlayer.gunshots[c].y
+
+      if ((gunshotX > enemyX-20) && (gunshotX < enemyX+20) && (gunshotY > enemyY-20) && (gunshotY < enemyY+25)) {
+        console.log('Colisão')
+
+        socket.emit('gunshot-collision', {
+          playerGunshot: currentPlayer.id,
+          enemy: enemy.id,
+          gunshotPosition: c
+        })
+
+        currentPlayer.gunshots.splice(c, 1)
+      } 
+    }
+
+  }
+
+}
 
 function renderScreen() {
 
   drawAtScreen()
   keysPressed()
   walkCollision()
+  tanksCollisions()
+  gunshotCollision()
 
 
   requestAnimationFrame(renderScreen)
