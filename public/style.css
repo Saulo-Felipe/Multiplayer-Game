@@ -1,5 +1,9 @@
 html, body {
     margin: 0;
+    width: max-content;
+}
+body {
+    overflow-y: hidden;
 }
 
 .game-container {
@@ -11,10 +15,81 @@ html, body {
 /*========= lateral menu ==========*/
 
 #lateral-container {
+    display: none;
     position: relative;
     left: 1505px;
     top: -510px;
     width: 250px;
     height: 1500px;
-    border: solid 1px red;
+}
+
+/* ------------ initial screen --------------- */
+
+.blur-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('./images/background-blur.jpeg');
+    opacity: 0.7;
+
+}
+
+.initial-container {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background-color: white;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+}
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.actions-container {
+    width: 70%;
+    margin:auto;
+}
+.actions-container > input {
+    width: -webkit-fill-available;
+    padding: 10px;
+    font-size: 15px;
+}
+.btns-container {
+    display: flex;
+    justify-content: space-between;
+}
+.btn {
+    border: none;
+    padding: 10px;
+    width: 49%;
+    margin-top: 5px;
+    color: white;
+    border-radius: 2px;
+    font-family: monospace;
+    cursor: pointer;
+}
+.btn-play {
+    background-color: green;
+}
+.btn-spectate {
+    background-color: rgb(220, 125, 0);
+}
+
+.error-msg {
+    text-align: center; 
+    color: red; 
+    margin-top: 15px; 
+}
+@media screen and (max-width: 1000px) {
+    .initial-container {
+        width: 500px;
+        height: 200px;
+    }
 }

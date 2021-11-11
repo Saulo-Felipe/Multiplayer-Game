@@ -5,10 +5,6 @@ socket.on('connect', () => {
   console.log("Conectado com o id: ", socket.id)
   
   currentPlayer.id = socket.id
-
-  socket.emit('new-player', currentPlayer, (response) => {
-    allEnemies = response.allEnemies
-  })
 })
 
 socket.on('add-player', (player) => {
@@ -41,14 +37,14 @@ socket.on('enemy-move', (state) => {
 })
 
 socket.on('add-gunshot', (gunshot) => {
+  if (currentPlayer.play === true) 
+    for (var c in allEnemies) {
+      if (allEnemies[c].id === gunshot.playerID) {
 
-  for (var c in allEnemies) {
-    if (allEnemies[c].id === gunshot.playerID) {
-
-      allEnemies[c].gunshots.push(gunshot)
-      break
+        allEnemies[c].gunshots.push(gunshot)
+        break
+      }
     }
-  }
 })
 
 socket.on('add-gunshot-collision', (enemy) => {
@@ -79,6 +75,32 @@ socket.on('add-gunshot-collision', (enemy) => {
 
 // ------------------------- GAME ------------------------- 
 
+function play() {
+  var inputName = document.querySelector('input')
+
+  if (inputName.value.length !== 0) {
+    socket.emit('new-player', currentPlayer, (response) => {
+      allEnemies = response.allEnemies
+    })
+    
+    currentPlayer.play = true
+    currentPlayer.name = inputName.value
+    localStorage.setItem('player_name', inputName.value)
+
+    document.querySelector('.blur-screen').style.display = 'none'
+    document.querySelector('.initial-container').style.display = 'none'
+
+  } else {   
+    var erroContainer = document.querySelector('.error-msg')
+    erroContainer.innerHTML = `Por favor, digite um nome de Jogador.`
+
+    setTimeout(() => {
+      erroContainer.innerHTML = ""
+    }, 3000)
+  }
+  
+}
+
 
 const Canvas = document.querySelector('canvas')
 const context = Canvas.getContext('2d')
@@ -102,27 +124,31 @@ var currentPlayer = {
   velocity: 4,
   life: 100,
   gunshots: [],
+  play: false,
 }
 var allEnemies = []
 
 document.addEventListener('keydown', (event) => {
-  gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+  if (currentPlayer.play === true) {
+    gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
 
-  if (event.code === 'Space') {
-    var newGunshot = {
-      playerID: currentPlayer.id,
-      x: currentPlayer.x,
-      y: currentPlayer.y,
-      angle: currentPlayer.angle
+    if (event.code === 'Space') {
+      var newGunshot = {
+        playerID: currentPlayer.id,
+        x: currentPlayer.x,
+        y: currentPlayer.y,
+        angle: currentPlayer.angle
+      }
+      currentPlayer.gunshots.push(newGunshot)
+  
+      socket.emit('new-gunshot', newGunshot)
     }
-    currentPlayer.gunshots.push(newGunshot)
-
-    socket.emit('new-gunshot', newGunshot)
   }
-
 })
 document.addEventListener('keyup', (event) => {
-  gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+  if (currentPlayer.play === true) 
+    gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+
 })
 
 
@@ -144,7 +170,7 @@ function keysPressed() {
     currentPlayer.directionAngle = -4
   
   if (gameConfigs.keysPressed['ArrowUp'] || gameConfigs.keysPressed['ArrowDown'] || gameConfigs.keysPressed['ArrowRight'] || gameConfigs.keysPressed['ArrowLeft'])
-    Observer('move')
+    Observer()
 
   
   currentPlayer.angle += currentPlayer.directionAngle*Math.PI/180
@@ -157,26 +183,46 @@ function keysPressed() {
 function drawAtScreen() {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
-  // My tank
-  context.save()
-  context.translate(currentPlayer.x, currentPlayer.y)
-  context.rotate(currentPlayer.angle)
-  context.drawImage(gameConfigs.myTank, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2)
-  context.restore()
-
-  // My gunshots
-  for (var gunshot of currentPlayer.gunshots) {
-
+  if (currentPlayer.play === true) {
+    // My tank
     context.save()
-    context.translate(gunshot.x, gunshot.y)
-    context.rotate(gunshot.angle)
-    context.beginPath()
-    context.fillRect(-2, -5, 4, 10)
-    context.stroke()
+    context.translate(currentPlayer.x, currentPlayer.y)
+    context.rotate(currentPlayer.angle)
+    context.drawImage(gameConfigs.myTank, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2)
+    context.restore()  
+
+    // my life
+    context.save()
+    context.translate(currentPlayer.x, currentPlayer.y)
+    context.font = "10px Arial";
+    var txtLife = '❤ ' + currentPlayer.life
+    context.fillText(txtLife, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2);
     context.restore()
 
-    gunshot.x += 5*Math.sin(gunshot.angle)
-    gunshot.y -= 5*Math.cos(gunshot.angle)
+    // My gunshots
+    for (var gunshot of currentPlayer.gunshots) {
+
+      context.save()
+      context.translate(gunshot.x, gunshot.y)
+      context.rotate(gunshot.angle)
+      context.beginPath()
+      context.fillRect(-2, -5, 4, 10)
+      context.stroke()
+      context.restore()
+
+      gunshot.x += 5*Math.sin(gunshot.angle)
+      gunshot.y -= 5*Math.cos(gunshot.angle)
+    }
+
+    context.save()
+    context.translate(currentPlayer.x, currentPlayer.y)
+    const txtName = currentPlayer.name
+    const txtNameWidth = context.measureText(txtName).width
+
+    context.font = "12px Arial";
+    context.fillText(txtName, -gameConfigs.myTank.width/2+25-(txtNameWidth/2), -gameConfigs.myTank.height/2+60)
+    context.restore()
+
   }
   
   // Enemy tank
@@ -204,14 +250,6 @@ function drawAtScreen() {
       gunshot.y -= 5*Math.cos(gunshot.angle)
     }
   }
-
-  // my life
-  context.save()
-  context.translate(currentPlayer.x, currentPlayer.y)
-  context.font = "10px Arial";
-  var txtLife = '❤ ' + currentPlayer.life
-  context.fillText(txtLife, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2);
-  context.restore()
 
   // Enemy lifes
   for (var enemy of allEnemies) {
@@ -256,7 +294,10 @@ function walkCollision() {
       (gunshot.y < 0)
     ) {
       console.log("bala saiu da tela")
+
       currentPlayer.gunshots.splice(index, 1)
+
+      Observer()
     }
   }
 
@@ -280,17 +321,17 @@ function walkCollision() {
   
 }
 
-function Observer(type) {
+function Observer() {
   console.log("[Enviando State]")
 
-  if (type === 'move')
-    socket.emit('player-move', {
-      id: currentPlayer.id,
-      x: currentPlayer.x,
-      y: currentPlayer.y,
-      angle: currentPlayer.angle,
-      directionAngle: currentPlayer.directionAngle
-    })
+  socket.emit('player-move', {
+    id: currentPlayer.id,
+    x: currentPlayer.x,
+    y: currentPlayer.y,
+    angle: currentPlayer.angle,
+    directionAngle: currentPlayer.directionAngle,
+    gunshots: currentPlayer.gunshots
+  })
     
 }
 
