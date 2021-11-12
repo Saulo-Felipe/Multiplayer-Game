@@ -108,10 +108,19 @@ const context = Canvas.getContext('2d')
 const gameConfigs = {
   myTank: new Image(),
   tankEnemy: new Image(),
-  keysPressed: []
+  keysPressed: [],
+
+  gameMap: new Image(),
+  centerMap: new Image(),
+
 }
+
 gameConfigs.myTank.src = "./images/i_tank.png"
 gameConfigs.tankEnemy.src = "./images/enemy.png"
+
+gameConfigs.gameMap.src = './images/map.png'
+gameConfigs.centerMap.src = './images/center_map.png'
+
 
 var currentPlayer = {
   name: 'Jogador',
@@ -180,8 +189,11 @@ function keysPressed() {
 
 }
 
+
 function drawAtScreen() {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+
+  context.drawImage(gameConfigs.gameMap, 0, 0)
 
   if (currentPlayer.play === true) {
     // My tank
@@ -261,7 +273,57 @@ function drawAtScreen() {
     context.restore()
   }
   
+  objectsMap()
+}
 
+function objectsCollision() {
+  const playerX = currentPlayer.x+20
+  const playerY = currentPlayer.y
+
+  // if (playerX > 481 && playerY > 258+20 && playerY < 258+206 && playerX < 481+180) {
+  //   currentPlayer.x -= currentPlayer.velocity
+  // }
+}
+
+function objectsMap() {
+
+  (() => { // object in center map
+    var tank = { x: currentPlayer.x, y: currentPlayer.y, radius: 25 }
+    var object = { x: 591+(180/2)-10, y: 411+(206/2)+30, radius: 75 }
+  
+    let dx = object.x - tank.x
+    let dy = object.y - tank.y
+  
+    let distance = Math.sqrt(dx*dx + dy*dy)
+    let sumRadios = tank.radius + object.radius
+  
+    if (distance < sumRadios) {
+      if (tank.x < object.x)
+        currentPlayer.x -= currentPlayer.velocity
+
+      else if (tank.x > object.x)    
+        currentPlayer.x += currentPlayer.velocity
+  
+      if (tank.y < object.y)
+        currentPlayer.y -= currentPlayer.velocity
+  
+      else if (tank.y > object.y)
+        currentPlayer.y += currentPlayer.velocity 
+    }  
+    context.drawImage(gameConfigs.centerMap, 591, 411)
+    context.beginPath()
+    context.arc(object.x, object.y, object.radius, 0, 2*Math.PI)
+    context.stroke()  
+  })(); // object in center map
+
+  (() => {
+    
+  });
+
+  // circle of tank
+  context.beginPath()
+  context.arc(tank.x, tank.y, tank.radius, 0, 2*Math.PI)
+  context.stroke()
 }
 
 function walkCollision() {
@@ -396,6 +458,7 @@ function renderScreen() {
   walkCollision()
   tanksCollisions()
   gunshotCollision()
+  objectsCollision()
 
 
   requestAnimationFrame(renderScreen)
