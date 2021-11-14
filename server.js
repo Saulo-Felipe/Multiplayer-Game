@@ -23,6 +23,8 @@ function updateRanking() {
     for (var c=0; c < 5; c++) {
         ranking.push(GameState[c])
     }
+
+    io.sockets.emit('update-ranking', ranking)
 }
 
 
@@ -58,6 +60,7 @@ io.on('connection', (socket) => {
         callback({allEnemies: GameState})
 
         GameState.push(player)
+        updateRanking()                    
     })
 
     socket.on('new-gunshot', (gunshot) => {
@@ -106,7 +109,6 @@ io.on('connection', (socket) => {
 
                     console.log(`JOGADOR: ${playerID} MATOU ${enemyID}`)
                     updateRanking()
-                    io.sockets.emit('update-ranking', ranking)
                 }
                 
                 break
@@ -122,8 +124,8 @@ io.on('connection', (socket) => {
                 GameState.splice(c, 1)
             }
         }
-
-        socket.broadcast.emit('player-dead-delete', id)
+        updateRanking()
+        io.sockets.emit('player-dead-delete', id)
     })
 
 })

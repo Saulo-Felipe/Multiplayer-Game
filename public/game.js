@@ -1,11 +1,22 @@
-var socket = io({transports: ['websocket']});
+var socket = io({transports: ['websocket'], reconnection: false});
 
 
 socket.on('connect', () => {
-  console.log("Conectado com o id: ", socket.id)
+  console.log("Conectado com o ID: ", socket.id)
   
   currentPlayer.id = socket.id
 })
+
+socket.on("disconnect", () => {
+  document.querySelector('.actions-container').innerHTML = `
+    <div style="text-align: center;">
+      <img src="./images/no-wifi.png" class="no-wifi-icon" >
+      <br>
+      <img src="./images/reload-page.png" style="cursor: pointer;" onclick="window.location.reload()">
+    </div>
+`
+})
+
 
 socket.on('add-player', (player) => {
   console.log('Novo jogador: ', player)
@@ -57,6 +68,28 @@ socket.on('add-gunshot', (gunshot) => {
 
 socket.on('update-ranking', (ranking) => {
   console.log('New ranking: ', ranking)
+  var container = document.querySelector('#ranking-players')
+
+  for (var c in ranking) {
+    var player = ranking[c]
+    if (player !== null) { 
+
+      var element = `
+        <div class="player-ranking">
+          <span>${Number(c)+1}. ${player.name}</span>
+          <span>${player.kills} mortes</span>
+        </div>
+      `
+
+      if (c == 0) 
+        container.innerHTML = element
+
+      else
+        container.innerHTML += element
+    
+    }  
+
+  }
 })
 
 
@@ -552,7 +585,6 @@ function walkCollision() {
       (gunshot.y > context.canvas.height) ||
       (gunshot.y < 0)
     ) {
-      console.log("bala saiu da tela")
 
       currentPlayer.gunshots.splice(index, 1)
 
@@ -666,6 +698,9 @@ function playerDead() {
       play: false,
       kills: 0,
     }
+    
+    document.querySelector('.blur-screen').style.display = 'block'
+    document.querySelector('.dead-screen').style.left = "50%"
 
     socket.emit('player-dead', currentPlayer.id)
   }

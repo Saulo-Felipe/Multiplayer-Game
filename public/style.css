@@ -21,13 +21,14 @@ progress {
 
 #ranking {
     width: 300px;
-    height: 200px;
+    min-height: 100px;
     background: rgba(0, 0, 0, 0.369);
     position: fixed;
     top: 0px;
     left: 100%;
     transform: translateX(-100%);
     color: white;
+    padding: 20px;
 }
 #ranking > h2 {
     text-align: center;
@@ -35,7 +36,22 @@ progress {
 .player-ranking {
     display: flex;
     justify-content: space-around;
+    margin-top: 20px;
 }
+.no-wifi-icon {
+    transition: all 0.5s;
+    animation-name: noWifi;
+    animation-iteration-count: infinite;
+    animation-duration: 1.5s;
+    position: relative;
+    transform: scale(0.7);
+}
+@keyframes noWifi {
+    33.333% { transform: scale(0.7); }
+    66.666% { transform: scale(1); }
+    100% { transform: scale(0.7); }
+}
+
 /* ------------ initial screen --------------- */
 
 .blur-screen {
@@ -58,6 +74,33 @@ progress {
     top: 40%;
     transform: translate(-50%, -50%);
     border-radius: 5px;
+}
+
+.dead-screen {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background-color: white;
+    left: -50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+    transition: 0.5s;
+}
+.info-dead {
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.result-info-dead {
+    font-weight: 400;
+}
+.dead-btns-container {
+    margin-top: 40px;
+    text-align: center;
+}
+.dead-btns-container > button {
+    width: 100%;
 }
 .logo-container {
     text-align: center;

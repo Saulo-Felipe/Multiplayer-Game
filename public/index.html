@@ -25,6 +25,21 @@
 
         <div class="error-msg"></div>
     </div>
+
+    <div class="dead-screen">
+        <div class="logo-container">
+            <img src="./images/dead-screen.png"/>
+        </div>
+        <div class="actions-container">
+            <div class="info-dead">Kills: <span class="result-info-dead">5 tanks</span></div>
+            <div class="info-dead">Tempo de sobrevivencia: <span class="result-info-dead">50 segundos</span></div>
+            <div class="dead-btns-container">
+                <button class="btn btn-play" onclick="newGame()">Continuar</button>
+            </div>
+        </div>
+
+        <div class="error-msg"></div>
+    </div>
     
     <div class="game-container">
         <canvas width="1500px" height="800px"></canvas>
@@ -32,10 +47,8 @@
 
     <div id="ranking">
         <h2>Ranking</h2>
-        <div class="player-ranking">
-            <span>1. Saulo</span>
-            <span>2 mortes</span>
-        </div>
+        <div id="ranking-players"></div>
+
     </div>
 
     <div id="heart-progress-bar"></div>
@@ -53,6 +66,15 @@
 
         if (localName !== null) {
             document.querySelector('input').value = localName
+        }
+
+        function newGame() {
+            document.querySelector('.dead-screen').style.left = "150%"
+
+            setTimeout(() => {
+                document.querySelector('.blur-screen').style.display = 'block'
+                document.querySelector('.initial-container').style.display = 'block'
+            }, 600)
         }
 
     </script>
