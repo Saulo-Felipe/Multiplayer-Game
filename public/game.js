@@ -9,20 +9,26 @@ socket.on('connect', () => {
 
 socket.on('add-player', (player) => {
   console.log('Novo jogador: ', player)
+  
+  heartUpdate('add', player.id, player.x, player.y)
 
   allEnemies.push(player)
 })
 
 socket.on("disconnected-player", (response) => {
+  var newState = response.GameState
 
-  for (var count in response) { // Remove id do atual player da lista de inimigos
-    if (response[count].id === currentPlayer.id) {
-      response.splice(count, 1)
+  for (var count in newState) { // Remove id do atual player da lista de inimigos
+    if (newState[count].id === currentPlayer.id) {
+      newState.splice(count, 1)
       break
     }
   }
 
-  allEnemies = response
+  // Remove heart 
+  heartUpdate('player-dead', response.playerID)
+
+  allEnemies = newState
 })
 
 socket.on('enemy-move', (state) => {
@@ -30,6 +36,8 @@ socket.on('enemy-move', (state) => {
   for (var c in allEnemies) {
     if (allEnemies[c].id === state.id) {
       allEnemies[c] = {...allEnemies[c], ...state}
+
+      heartUpdate('update-position', allEnemies[c].id, allEnemies[c].x, allEnemies[c].y)
       break
     }
   }
@@ -47,14 +55,21 @@ socket.on('add-gunshot', (gunshot) => {
     }
 })
 
+socket.on('update-ranking', (ranking) => {
+  console.log('New ranking: ', ranking)
+})
+
+
 socket.on('add-gunshot-collision', (enemy) => {
   if (enemy.id === currentPlayer.id) {
-    console.log("EU mesmo, atualizando: ", enemy)
     currentPlayer.life = enemy.life
+    heartUpdate('update-heart', currentPlayer.id, 0, 0, enemy.life)
   } else {
     for (var p in allEnemies) {
       if (allEnemies[p].id === enemy.id) {
         allEnemies[p].life = enemy.life
+    
+        heartUpdate('update-heart', allEnemies[p].id, 0, 0, allEnemies[p].life)
         break
       }
     }
@@ -64,50 +79,25 @@ socket.on('add-gunshot-collision', (enemy) => {
     if (allEnemies[c] === enemy.id) {
       allEnemies[c].life = enemy.life
     }
-    console.log('Teste: ', enemy)
+
     if (allEnemies[c].id === enemy.removeID) {
-      console.log("ENtrreii")
       allEnemies[c].gunshots.splice(Number(enemy.gunshotIndex), 1)
     }
   }
+})
 
+socket.on('player-dead-delete', (id) => {
+  for (var c in allEnemies) {
+    var enemy = allEnemies[c]
+
+    if (enemy.id === id) {
+      heartUpdate('player-dead', enemy.id)
+      allEnemies.splice(c, 1)
+    }
+  }
 })
 
 // ------------------------- GAME ------------------------- 
-
-function play() {
-  var inputName = document.querySelector('input')
-
-  if (inputName.value.length !== 0) {
-    socket.emit('new-player', currentPlayer, (response) => {
-      allEnemies = response.allEnemies
-    })
-    
-    currentPlayer.play = true
-    currentPlayer.name = inputName.value
-    localStorage.setItem('player_name', inputName.value)
-
-    document.querySelector('.blur-screen').style.display = 'none'
-    document.querySelector('.initial-container').style.display = 'none'
-
-  } else {   
-    var erroContainer = document.querySelector('.error-msg')
-    erroContainer.innerHTML = `Por favor, digite um nome de Jogador.`
-
-    setTimeout(() => {
-      erroContainer.innerHTML = ""
-    }, 3000)
-  }
-
-  // Input progress life
-  var container = document.querySelector('#heart-progress-bar')
-
-  container.innerHTML = `
-    <progress id="${currentPlayer.id}" style="left: ${currentPlayer.x-25}px; top: ${currentPlayer.y-25}px" value="100" max="100"></progress>
-  `
-  
-}
-
 
 const Canvas = document.querySelector('canvas')
 const context = Canvas.getContext('2d')
@@ -141,8 +131,44 @@ var currentPlayer = {
   life: 100,
   gunshots: [],
   play: false,
+  kills: 0,
 }
 var allEnemies = []
+
+function play() {
+  var inputName = document.querySelector('input')
+
+  if (inputName.value.length !== 0) {
+    
+    currentPlayer.play = true
+    currentPlayer.name = inputName.value
+    localStorage.setItem('player_name', inputName.value)
+
+    socket.emit('new-player', currentPlayer, (response) => {
+      allEnemies = response.allEnemies
+
+      for (var enemy of allEnemies) {
+        heartUpdate('add', enemy.id, enemy.x, enemy.y)
+        heartUpdate('update-heart', enemy.id, 0, 0, enemy.life)
+      }
+
+    })
+
+
+    document.querySelector('.blur-screen').style.display = 'none'
+    document.querySelector('.initial-container').style.display = 'none'
+
+  } else {   
+    var erroContainer = document.querySelector('.error-msg')
+    erroContainer.innerHTML = `Por favor, digite um nome de Jogador.`
+
+    setTimeout(() => {
+      erroContainer.innerHTML = ""
+    }, 3000)
+  }
+
+  heartUpdate('add', currentPlayer.id, currentPlayer.x, currentPlayer.y)
+}
 
 document.addEventListener('keydown', (event) => {
   if (currentPlayer.play === true) {
@@ -186,11 +212,8 @@ function keysPressed() {
     currentPlayer.directionAngle = -4
   
   if (gameConfigs.keysPressed['ArrowUp'] || gameConfigs.keysPressed['ArrowDown'] || gameConfigs.keysPressed['ArrowRight'] || gameConfigs.keysPressed['ArrowLeft']) {
+    heartUpdate('update-position', currentPlayer.id, currentPlayer.x, currentPlayer.y)
     Observer()
-    var heart = document.querySelector(`#${currentPlayer.id}`)
-
-    heart.style.left = `${currentPlayer.x-20}px`
-    heart.style.top = `${currentPlayer.y-40}px`
   }
 
   
@@ -201,6 +224,41 @@ function keysPressed() {
 
 }
 
+function heartUpdate(type, id, x, y, value) {
+  if (type === 'add') {
+    var container = document.querySelector('#heart-progress-bar')
+
+    container.innerHTML += `
+      <progress id="S${id}" value="100" max="100"></progress>
+    `
+    var inputLife = document.querySelector(`#S${id}`)
+
+    inputLife.style.left = `${x-20}px`
+    inputLife.style.top = `${y-35}px`
+
+  }
+
+  var inputLife = document.querySelector(`#S${id}`)
+
+  if (inputLife !== null) {
+    
+    if (type === 'update-position') {
+      inputLife.style.left = `${x-20}px`
+      inputLife.style.top = `${y-35}px`
+
+    }
+    else if (type === 'update-heart') {
+      inputLife.setAttribute('value', value)
+
+    }
+    else if (type === 'player-dead') {
+      console.log("removendo: ", inputLife)
+      inputLife.remove()
+
+    }
+  }
+
+}
 
 function drawAtScreen() {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height)
@@ -214,15 +272,6 @@ function drawAtScreen() {
     context.rotate(currentPlayer.angle)
     context.drawImage(gameConfigs.myTank, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2)
     context.restore()  
-
-    // my life
-    // context.save()
-    // context.translate(currentPlayer.x, currentPlayer.y)
-    // context.font = "10px Arial";
-    // var txtLife = '❤ ' + currentPlayer.life
-    // context.fillText(txtLife, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2);
-    // context.restore()
-    document.querySelector(`#${currentPlayer.id}`)//.setAttribute('value', currentPlayer.life)
 
 
     // My gunshots
@@ -248,14 +297,6 @@ function drawAtScreen() {
     context.font = "12px Arial";
     context.fillText(txtName, -gameConfigs.myTank.width/2+25-(txtNameWidth/2), -gameConfigs.myTank.height/2+60)
     context.restore()
-
-
-    // for (let c = 0; c < 5; c++) {
-    //   if (c === 0) 
-    //     roundedRect(context, { x: 0, y: 40, width: 30, height: 20, radius: 50, color: 'red' })
-    //   // else 
-    //   //   context.rect(30*c, 40, 30, 20)
-    // }
     
   }
   
@@ -263,6 +304,12 @@ function drawAtScreen() {
   for (var tank of allEnemies) {
     context.save()
     context.translate(tank.x, tank.y)
+    
+    const txtName = tank.name
+    const txtNameWidth = context.measureText(txtName).width
+    context.font = "12px Arial";
+    context.fillText(txtName, -gameConfigs.tankEnemy.width/2+25-(txtNameWidth/2), -gameConfigs.tankEnemy.height/2+60)
+    
     context.rotate(tank.angle)
     context.drawImage(gameConfigs.tankEnemy, -gameConfigs.tankEnemy.width/2, -gameConfigs.myTank.height/2)
     context.restore()
@@ -285,15 +332,6 @@ function drawAtScreen() {
     }
   }
 
-  // Enemy lifes
-  for (var enemy of allEnemies) {
-    context.save()
-    context.translate(enemy.x, enemy.y)
-    context.font = "10px Arial";
-    var txtLife = '❤ ' + enemy.life
-    context.fillText(txtLife, -gameConfigs.tankEnemy.width/2, -gameConfigs.tankEnemy.height/2);
-    context.restore()
-  }
 
   context.drawImage(gameConfigs.centerMap, 591, 411)
 
@@ -610,6 +648,29 @@ function gunshotCollision() {
 
 }
 
+function playerDead() {
+  if (currentPlayer.life <= 0) {
+    heartUpdate('player-dead', currentPlayer.id)
+
+    currentPlayer = {
+      name: 'Jogador',
+      id: currentPlayer.id,
+      x: 200,
+      y: 200,
+      angle: 0,
+      directionAngle: 0,
+      speed: 0,
+      velocity: 4,
+      life: 100,
+      gunshots: [],
+      play: false,
+      kills: 0,
+    }
+
+    socket.emit('player-dead', currentPlayer.id)
+  }
+}
+
 function renderScreen() {
 
   drawAtScreen()
@@ -618,6 +679,7 @@ function renderScreen() {
   tanksCollisions()
   gunshotCollision()
   ObstaclesMap()
+  playerDead()
 
 
 

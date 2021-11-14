@@ -13,6 +13,18 @@ app.get('*', (request, response) => {
 })
 
 var GameState = []
+var ranking = []
+
+
+function updateRanking() {
+    GameState.sort((a, b) => a.kills > b.kills ? 1 : -1).reverse()
+    ranking = []
+
+    for (var c=0; c < 5; c++) {
+        ranking.push(GameState[c])
+    }
+}
+
 
 io.on('connection', (socket) => {
     
@@ -32,11 +44,12 @@ io.on('connection', (socket) => {
         for (var count in GameState) { // Remove disconnected player
             if (GameState[count].id === socket.id) {
                 GameState.splice(count, 1)
+                updateRanking()
                 break
             }
         }
 
-        io.sockets.emit('disconnected-player', GameState)
+        io.sockets.emit('disconnected-player', {GameState, playerID: socket.id})
     })
 
     socket.on('new-player', (player, callback) => {
@@ -83,12 +96,34 @@ io.on('connection', (socket) => {
                     removeID: playerID, 
                     gunshotIndex: state.gunshotPosition
                 })
+
+                if (GameState[c].life <= 0) {
+                    for (var count in GameState) {
+                        if (GameState[count].id === playerID) {
+                            GameState[count].kills += 1
+                        }
+                    }
+
+                    console.log(`JOGADOR: ${playerID} MATOU ${enemyID}`)
+                    updateRanking()
+                    io.sockets.emit('update-ranking', ranking)
+                }
                 
                 break
             }
         }
 
-        console.log(state.playerGunshot + ' Atirou em ' + state.enemy)
+    })
+
+    socket.on('player-dead', (id) => {
+
+        for (var c in GameState) {
+            if (GameState[c].id === id) {
+                GameState.splice(c, 1)
+            }
+        }
+
+        socket.broadcast.emit('player-dead-delete', id)
     })
 
 })

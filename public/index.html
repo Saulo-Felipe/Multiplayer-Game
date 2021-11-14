@@ -30,16 +30,15 @@
         <canvas width="1500px" height="800px"></canvas>
     </div>
 
-    <div id="lateral-container">
-        <div id="chat"></div>
-        <div id="zone-joystick">
-
+    <div id="ranking">
+        <h2>Ranking</h2>
+        <div class="player-ranking">
+            <span>1. Saulo</span>
+            <span>2 mortes</span>
         </div>
     </div>
 
     <div id="heart-progress-bar"></div>
-
-    <progress id="health" value="100" max="100"></progress>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="./moviments.js" ></script>
@@ -56,7 +55,7 @@
             document.querySelector('input').value = localName
         }
 
-</script>
+    </script>
 
 
 </body>
