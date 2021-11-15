@@ -15,11 +15,14 @@ app.get('*', (request, response) => {
 
 
 const gameArea = {
-  canvasWidth: 10,
-  canvasHeight: 10,
+  canvasWidth: 1500,
+  canvasHeight: 800,
   players: {},
   createPlayer,
   deletePlayer,
+  movePlayer,
+  sendMoviment,
+  walkCollision,
 }
 
 
@@ -33,7 +36,6 @@ io.on('connection', (socket) => {
   socket.broadcast.emit('add-player', gameArea.players[socket.id])
 
 
-
   socket.on('disconnect', () => {
     console.log('[Disconnect] --> ', socket.id)
 
@@ -44,17 +46,13 @@ io.on('connection', (socket) => {
     socket.disconnect()
   })
 
-  socket.on('test', () => {
-    console.log('Recebi')
-    io.sockets.emit('teste', 'De volta')
+  socket.on('move-player', (newMoviment) => {
+    gameArea.movePlayer(newMoviment)
+    
+    gameArea.sendMoviment(gameArea.players[newMoviment.id])
   })
 
 })
-
-
-function deletePlayer(id) {
-  delete gameArea.players[id]
-}
 
 function createPlayer(id) {
   gameArea.players[id] = {
@@ -70,6 +68,70 @@ function createPlayer(id) {
     gunshots: [],
     kills: 0,
   }
+}
+
+function deletePlayer(id) {
+  delete gameArea.players[id]
+}
+
+function movePlayer(newMoviment) {
+  const currentPlayer = gameArea.players[newMoviment.id]
+
+  currentPlayer.directionAngle = 0
+  currentPlayer.speed = 0
+
+  switch (newMoviment.type) {
+    case 'ArrowUp':
+      currentPlayer.speed = 10
+      break;
+    case 'ArrowDown':
+      currentPlayer.speed = -10
+      break;
+    case 'ArrowRight':
+      currentPlayer.directionAngle = 10
+      break;
+    case 'ArrowLeft':
+      currentPlayer.directionAngle = -10
+      break;
+    default:
+      break;
+  }
+    
+  currentPlayer.angle += currentPlayer.directionAngle*Math.PI/180
+
+  currentPlayer.x += currentPlayer.speed*Math.sin(currentPlayer.angle)
+  currentPlayer.y -= currentPlayer.speed*Math.cos(currentPlayer.angle)
+
+
+  gameArea.walkCollision(currentPlayer.id)
+}
+
+function sendMoviment(movedPlayer) {
+  io.sockets.emit('receive-moviment', {
+    id: movedPlayer.id, 
+    angle: movedPlayer.angle, 
+    x: movedPlayer.x, 
+    y: movedPlayer.y 
+  })
+}
+
+function walkCollision(playerMoveID) {
+  const player = gameArea.players[playerMoveID]
+
+  if (player.y-25 < 0)
+    player.y += 10
+
+  if (player.y+25 > gameArea.canvasHeight)
+    player.y -= 10
+
+  if (player.x-25 < 0) 
+    player.x += 10
+
+  if (player.x+25 > gameArea.canvasWidth) 
+    player.x -= 10
+
+
+  gameArea.sendMoviment(player)
 }
 
 

@@ -20,8 +20,8 @@ socket.on('add-player', (player) => {
   gameArea.createPlayer(player)
 })
 
-socket.on('teste', (msg) => {
-  console.log(msg)
+socket.on('receive-moviment', (newMoviment) => {
+  gameArea.receiveMoviment(newMoviment)
 })
 
 
@@ -41,6 +41,7 @@ const gameArea = {
   setState,
   disconnected,
   movePlayer,
+  receiveMoviment,
 }
 
 
@@ -71,31 +72,13 @@ function disconnected() {
 }
 
 function movePlayer(key) {
-  const currentPlayer = gameArea.players[socket.id]
+  console.log('[Send Moviment] --> ', socket.id)
 
-  currentPlayer.directionAngle = 0
-  currentPlayer.speed = 0
+  socket.emit('move-player', {id: socket.id, type: key})
+}
 
-  switch (key) {
-    case 'ArrowUp':
-      currentPlayer.speed = 10
-      break;
-    case 'ArrowDown':
-      currentPlayer.speed = -4
-      break;
-    case 'ArrowRight':
-      currentPlayer.directionAngle = 10
-      break;
-    case 'ArrowLeft':
-      currentPlayer.directionAngle = -10
-      break;
-    default:
-      break;
-  }
-    
-  currentPlayer.angle += currentPlayer.directionAngle*Math.PI/180
+function receiveMoviment(newMoviment) {
+  console.log('[Receive Moviment] --> ', newMoviment.id)
 
-  currentPlayer.x += currentPlayer.speed*Math.sin(currentPlayer.angle)
-  currentPlayer.y -= currentPlayer.speed*Math.cos(currentPlayer.angle)
-
+  gameArea.players[newMoviment.id] = {...newMoviment}
 }
