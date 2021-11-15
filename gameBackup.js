@@ -1,387 +1,724 @@
-const socket = io('https://multiplayer-game-saulo.herokuapp.com/')
+var socket = io({transports: ['websocket'], reconnection: false});
+
 
 socket.on('connect', () => {
-    socket.emit("new-connection", true, (error, message) => {
-        for (var defaultPlayer of message) {
-            gameArea.allEnemies.push(defaultPlayer)
-        }
-    })
+  console.log("Conectado com o ID: ", socket.id)
+  
+  currentPlayer.id = socket.id
 })
 
-socket.on('user_id', (id) => {
-    console.log("Conectado com o ID: ", id)
-    player.id = id.id
-    oldState.id = id.id
-    socket.emit('add-new-player', player)
+socket.on("disconnect", () => {
+  document.querySelector('.actions-container').innerHTML = `
+    <div style="text-align: center;">
+      <img src="./images/no-wifi.png" class="no-wifi-icon" >
+      <br>
+      <img src="./images/reload-page.png" style="cursor: pointer;" onclick="window.location.reload()">
+    </div>
+`
 })
 
-socket.on('new-player', (player) => {
-    gameArea.allEnemies.push(player)
+
+socket.on('add-player', (player) => {
+  console.log('Novo jogador: ', player)
+  
+  heartUpdate('add', player.id, player.x, player.y)
+
+  allEnemies.push(player)
 })
 
-socket.on('disconnected', (id) => {
-    for (var count in gameArea.allEnemies) {
-        if (gameArea.allEnemies[count].id === id) {
-            delete gameArea.allEnemies[count]
-        }
+socket.on("disconnected-player", (response) => {
+  var newState = response.GameState
+
+  for (var count in newState) { // Remove id do atual player da lista de inimigos
+    if (newState[count].id === currentPlayer.id) {
+      newState.splice(count, 1)
+      break
     }
+  }
+
+  // Remove heart 
+  heartUpdate('player-dead', response.playerID)
+
+  allEnemies = newState
+})
+
+socket.on('enemy-move', (state) => {
+
+  for (var c in allEnemies) {
+    if (allEnemies[c].id === state.id) {
+      allEnemies[c] = {...allEnemies[c], ...state}
+
+      heartUpdate('update-position', allEnemies[c].id, allEnemies[c].x, allEnemies[c].y)
+      break
+    }
+  }
+  
+})
+
+socket.on('add-gunshot', (gunshot) => {
+  if (currentPlayer.play === true) 
+    for (var c in allEnemies) {
+      if (allEnemies[c].id === gunshot.playerID) {
+
+        allEnemies[c].gunshots.push(gunshot)
+        break
+      }
+    }
+})
+
+socket.on('update-ranking', (ranking) => {
+  console.log('New ranking: ', ranking)
+  var container = document.querySelector('#ranking-players')
+
+  for (var c in ranking) {
+    var player = ranking[c]
+    if (player !== null) { 
+
+      var element = `
+        <div class="player-ranking">
+          <span>${Number(c)+1}. ${player.name}</span>
+          <span>${player.kills} mortes</span>
+        </div>
+      `
+
+      if (c == 0) 
+        container.innerHTML = element
+
+      else
+        container.innerHTML += element
     
-    // Clear array
-    var cleanArray = []
-    for (var count in gameArea.allEnemies) {
-        if (typeof gameArea.allEnemies[count] !== 'undefined')
-            cleanArray.push(gameArea.allEnemies[count])
-    }
-    gameArea.allEnemies = cleanArray
+    }  
+
+  }
 })
 
-socket.on('refresh-players', (state) => {
 
-    if (state.id === player.id) {
-        player = state
+socket.on('add-gunshot-collision', (enemy) => {
+  if (enemy.id === currentPlayer.id) {
+    currentPlayer.life = enemy.life
+    heartUpdate('update-heart', currentPlayer.id, 0, 0, enemy.life)
+  } else {
+    for (var p in allEnemies) {
+      if (allEnemies[p].id === enemy.id) {
+        allEnemies[p].life = enemy.life
+    
+        heartUpdate('update-heart', allEnemies[p].id, 0, 0, allEnemies[p].life)
+        break
+      }
+    }
+  }
+
+  for (var c in allEnemies) {
+    if (allEnemies[c] === enemy.id) {
+      allEnemies[c].life = enemy.life
+    }
+
+    if (allEnemies[c].id === enemy.removeID) {
+      allEnemies[c].gunshots.splice(Number(enemy.gunshotIndex), 1)
+    }
+  }
+})
+
+socket.on('player-dead-delete', (id) => {
+  for (var c in allEnemies) {
+    var enemy = allEnemies[c]
+
+    if (enemy.id === id) {
+      heartUpdate('player-dead', enemy.id)
+      allEnemies.splice(c, 1)
+    }
+  }
+})
+
+// ------------------------- GAME ------------------------- 
+
+const Canvas = document.querySelector('canvas')
+const context = Canvas.getContext('2d')
+
+const gameConfigs = {
+  myTank: new Image(),
+  tankEnemy: new Image(),
+  keysPressed: [],
+
+  gameMap: new Image(),
+  centerMap: new Image(),
+
+}
+
+gameConfigs.myTank.src = "./images/i_tank.png"
+gameConfigs.tankEnemy.src = "./images/enemy.png"
+
+gameConfigs.gameMap.src = './images/map.png'
+gameConfigs.centerMap.src = './images/center_map.png'
+
+
+var currentPlayer = {
+  name: 'Jogador',
+  id: 'Guest',
+  x: 200,
+  y: 200,
+  angle: 0,
+  directionAngle: 0,
+  speed: 0,
+  velocity: 4,
+  life: 100,
+  gunshots: [],
+  play: false,
+  kills: 0,
+}
+var allEnemies = []
+
+function play() {
+  var inputName = document.querySelector('input')
+
+  if (inputName.value.length !== 0) {
+    
+    currentPlayer.play = true
+    currentPlayer.name = inputName.value
+    localStorage.setItem('player_name', inputName.value)
+
+    socket.emit('new-player', currentPlayer, (response) => {
+      allEnemies = response.allEnemies
+
+      for (var enemy of allEnemies) {
+        heartUpdate('add', enemy.id, enemy.x, enemy.y)
+        heartUpdate('update-heart', enemy.id, 0, 0, enemy.life)
+      }
+
+    })
+
+
+    document.querySelector('.blur-screen').style.display = 'none'
+    document.querySelector('.initial-container').style.display = 'none'
+
+  } else {   
+    var erroContainer = document.querySelector('.error-msg')
+    erroContainer.innerHTML = `Por favor, digite um nome de Jogador.`
+
+    setTimeout(() => {
+      erroContainer.innerHTML = ""
+    }, 3000)
+  }
+
+  heartUpdate('add', currentPlayer.id, currentPlayer.x, currentPlayer.y)
+}
+
+document.addEventListener('keydown', (event) => {
+  if (currentPlayer.play === true) {
+    gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+
+    if (event.code === 'Space') {
+      var newGunshot = {
+        playerID: currentPlayer.id,
+        x: currentPlayer.x,
+        y: currentPlayer.y,
+        angle: currentPlayer.angle
+      }
+      currentPlayer.gunshots.push(newGunshot)
+  
+      socket.emit('new-gunshot', newGunshot)
+    }
+  }
+})
+document.addEventListener('keyup', (event) => {
+  if (currentPlayer.play === true) 
+    gameConfigs.keysPressed[event.code] = (event.type === 'keydown')
+
+})
+
+
+function keysPressed() {
+
+  currentPlayer.directionAngle = 0
+  currentPlayer.speed = 0
+
+  if (gameConfigs.keysPressed['ArrowUp'])
+    currentPlayer.speed = 4
+
+  if (gameConfigs.keysPressed['ArrowDown'])
+    currentPlayer.speed = -4
+
+  if (gameConfigs.keysPressed['ArrowRight'])
+    currentPlayer.directionAngle = 4
+
+  if (gameConfigs.keysPressed['ArrowLeft'])
+    currentPlayer.directionAngle = -4
+  
+  if (gameConfigs.keysPressed['ArrowUp'] || gameConfigs.keysPressed['ArrowDown'] || gameConfigs.keysPressed['ArrowRight'] || gameConfigs.keysPressed['ArrowLeft']) {
+    heartUpdate('update-position', currentPlayer.id, currentPlayer.x, currentPlayer.y)
+    Observer()
+  }
+
+  
+  currentPlayer.angle += currentPlayer.directionAngle*Math.PI/180
+
+  currentPlayer.x += currentPlayer.speed*Math.sin(currentPlayer.angle)
+  currentPlayer.y -= currentPlayer.speed*Math.cos(currentPlayer.angle)
+
+}
+
+function heartUpdate(type, id, x, y, value) {
+  if (type === 'add') {
+    var container = document.querySelector('#heart-progress-bar')
+
+    container.innerHTML += `
+      <progress id="S${id}" value="100" max="100"></progress>
+    `
+    var inputLife = document.querySelector(`#S${id}`)
+
+    inputLife.style.left = `${x-20}px`
+    inputLife.style.top = `${y-35}px`
+
+  }
+
+  var inputLife = document.querySelector(`#S${id}`)
+
+  if (inputLife !== null) {
+    
+    if (type === 'update-position') {
+      inputLife.style.left = `${x-20}px`
+      inputLife.style.top = `${y-35}px`
+
+    }
+    else if (type === 'update-heart') {
+      inputLife.setAttribute('value', value)
+
+    }
+    else if (type === 'player-dead') {
+      console.log("removendo: ", inputLife)
+      inputLife.remove()
+
+    }
+  }
+
+}
+
+function drawAtScreen() {
+  context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+
+  context.drawImage(gameConfigs.gameMap, 0, 0)
+
+  if (currentPlayer.play === true) {
+    // My tank
+    context.save()
+    context.translate(currentPlayer.x, currentPlayer.y)
+    context.rotate(currentPlayer.angle)
+    context.drawImage(gameConfigs.myTank, -gameConfigs.myTank.width/2, -gameConfigs.myTank.height/2)
+    context.restore()  
+
+
+    // My gunshots
+    for (var gunshot of currentPlayer.gunshots) {
+
+      context.save()
+      context.translate(gunshot.x, gunshot.y)
+      context.rotate(gunshot.angle)
+      context.beginPath()
+      context.fillRect(-2, -5, 4, 10)
+      context.stroke()
+      context.restore()
+
+      gunshot.x += 5*Math.sin(gunshot.angle)
+      gunshot.y -= 5*Math.cos(gunshot.angle)
+    }
+
+    // My name 
+    context.save()
+    context.translate(currentPlayer.x, currentPlayer.y)
+    const txtName = currentPlayer.name
+    const txtNameWidth = context.measureText(txtName).width
+    context.font = "12px Arial";
+    context.fillText(txtName, -gameConfigs.myTank.width/2+25-(txtNameWidth/2), -gameConfigs.myTank.height/2+60)
+    context.restore()
+    
+  }
+  
+  // Enemy tank
+  for (var tank of allEnemies) {
+    context.save()
+    context.translate(tank.x, tank.y)
+    
+    const txtName = tank.name
+    const txtNameWidth = context.measureText(txtName).width
+    context.font = "12px Arial";
+    context.fillText(txtName, -gameConfigs.tankEnemy.width/2+25-(txtNameWidth/2), -gameConfigs.tankEnemy.height/2+60)
+    
+    context.rotate(tank.angle)
+    context.drawImage(gameConfigs.tankEnemy, -gameConfigs.tankEnemy.width/2, -gameConfigs.myTank.height/2)
+    context.restore()
+  }
+  
+  // Enemy gunshots
+  for (var enemy of allEnemies) {
+    for (var gunshot of enemy.gunshots) {
+
+      context.save()
+      context.translate(gunshot.x, gunshot.y)
+      context.rotate(gunshot.angle)
+      context.beginPath()
+      context.fillRect(-2, -5, 4, 10)
+      context.stroke()
+      context.restore()
+  
+      gunshot.x += 5*Math.sin(gunshot.angle)
+      gunshot.y -= 5*Math.cos(gunshot.angle)
+    }
+  }
+
+
+  context.drawImage(gameConfigs.centerMap, 591, 411)
+
+}
+
+function ObstaclesMap() {
+
+  (() => { // Circular collision
+    var tank = { x: currentPlayer.x, y: currentPlayer.y, radius: 25 }
+    var allObstacles = [
+
+      { x: 591+(180/2)-10, y: 411+(206/2)+30, radius: 75 },
+
+      // Truck car collision
+      { x: 319+(55/2), y: 276+(55/2), radius: 27.5 },
+      { x: 330+(55/2), y: 254+(55/2), radius: 27.5 },
+      { x: 342+(55/2), y: 224+(55/2), radius: 27.5 },
+      { x: 351+(55/2), y: 200+(55/2), radius: 27.5 },
+      { x: 362+(55/2), y: 169+(55/2), radius: 27.5 },
+      { x: 374+(55/2), y: 145+(55/2), radius: 27.5 },
+
+      // barricade collision
+      { x: 1141+(18/2), y: 198+(18/2), radius: 9 },
+      { x: 1149+(18/2), y: 209+(18/2), radius: 9 },
+      { x: 1157+(18/2), y: 215+(18/2), radius: 9 },
+      { x: 1165+(18/2), y: 224+(18/2), radius: 9 },
+      { x: 1175+(18/2), y: 233+(18/2), radius: 9 },
+      { x: 1184+(18/2), y: 242+(18/2), radius: 9 },
+      { x: 1193+(18/2), y: 251+(18/2), radius: 9 },
+      { x: 1202+(18/2), y: 258+(18/2), radius: 9 },
+      { x: 1211+(18/2), y: 267+(18/2), radius: 9 },
+
+    ]
+
+    for (var obstacle of allObstacles) {
+
+      let dx = obstacle.x - tank.x
+      let dy = obstacle.y - tank.y
+    
+      let distance = Math.sqrt(dx*dx + dy*dy)
+      let sumRadios = tank.radius + obstacle.radius
+    
+      if (distance < sumRadios) { // My tank collision
+        if (tank.x < obstacle.x)
+          currentPlayer.x -= currentPlayer.velocity
+  
+        else if (tank.x > obstacle.x)    
+          currentPlayer.x += currentPlayer.velocity
+    
+        if (tank.y < obstacle.y)
+          currentPlayer.y -= currentPlayer.velocity
+    
+        else if (tank.y > obstacle.y)
+          currentPlayer.y += currentPlayer.velocity 
+      }
+
+      // My gunshots collision
+      for (var count in currentPlayer.gunshots) {
+        var gunshot = currentPlayer.gunshots[count]
+
+        let dx = obstacle.x - gunshot.x
+        let dy = obstacle.y - gunshot.y
+
+        let distance = Math.sqrt(dx*dx + dy*dy)
+        let sumRadios = 5 + obstacle.radius
+
+        if (distance < sumRadios) 
+          currentPlayer.gunshots.splice(count, 1)
+      }
+
+      // Enemy gunshots collision
+      for (var c in allEnemies) {
+        var enemy = allEnemies[c]
+
+        for (var count in enemy.gunshots) {
+          var gunshot = enemy.gunshots[count]
+
+          let dx = obstacle.x - gunshot.x
+          let dy = obstacle.y - gunshot.y
+  
+          let distance = Math.sqrt(dx*dx + dy*dy)
+          let sumRadios = 5 + obstacle.radius
+  
+          if (distance < sumRadios)
+            allEnemies[c].gunshots.splice(count, 1)
+        }
+      }
+
+      // Ver forma ao redor dos obstaculos
+      // context.beginPath()
+      // context.arc(obstacle.x, obstacle.y, obstacle.radius, 0, 2*Math.PI)
+      // context.stroke()      
+    }
+
+  })();
+
+  (() => { // Rectangles collisions
+    const tankUp = currentPlayer.y - gameConfigs.myTank.height/2
+    const tankBottom = currentPlayer.y + gameConfigs.myTank.height/2
+    const tankLeft = currentPlayer.x - gameConfigs.myTank.width/2
+    const tankRight = currentPlayer.x + gameConfigs.myTank.width/2
+
+    var allObstacles = [
+      {Top: 622, Bottom: 726, Left: 295, Right: 325},
+      {Top: 520, Bottom: 545, Left: 100, Right: 280},
+      {Top: 267, Bottom: 287, Left: 72, Right: 217},
+      {Top: 215, Bottom: 238, Left: 552, Right: 791},
+      {Top: 0, Bottom: 117, Left: 1154, Right: 1175},
+      {Top: 288, Bottom: 307, Left: 1306, Right: 1424},
+
+      // Cars
+      {Top: 514, Bottom: 611, Left: 1177, Right: 1217},
+      {Top: 514, Bottom: 611, Left: 1357, Right: 1398},
+      {Top: 693, Bottom: 796, Left: 1352, Right: 1398},
+      {Top: 491, Bottom: 587, Left: 710, Right: 761},
+
+      // fence 
+      {Top: 509, Bottom: 683, Left: 1058, Right: 1072},
+      {Top: 745, Bottom: 800, Left: 1058, Right: 1071},
+      {Top: 496, Bottom: 509, Left: 1058, Right: 1500},
+
+    ]
+
+    for (let obstacle of allObstacles) {
+
+      // Tank Collision
+      if ((tankBottom > obstacle.Top && tankBottom < obstacle.Top+5) && (tankRight > obstacle.Left && tankLeft < obstacle.Right))
+        currentPlayer.y -= currentPlayer.velocity
+
+      if ((tankUp < obstacle.Bottom && tankUp > obstacle.Bottom-5) && (tankRight > obstacle.Left && tankLeft < obstacle.Right))
+        currentPlayer.y += currentPlayer.velocity
+
+      if ((tankRight > obstacle.Left && tankRight < obstacle.Left+5) && (tankBottom > obstacle.Top && tankUp <  obstacle.Bottom))
+        currentPlayer.x -= currentPlayer.velocity
+
+      if ((tankLeft < obstacle.Right && tankLeft > obstacle.Right-5) && (tankBottom > obstacle.Top && tankUp <  obstacle.Bottom))
+        currentPlayer.x += currentPlayer.velocity
+
+
+      // My gunshots collision
+      for (var c in currentPlayer.gunshots) {
+        var gunshot = currentPlayer.gunshots[c]
+
+        if ((gunshot.y > obstacle.Top && gunshot.y < obstacle.Top+5) && (gunshot.x < obstacle.Right && gunshot.x > obstacle.Left))
+          currentPlayer.gunshots.splice(c, 1)
         
-    } else {
-        for (var c in gameArea.allEnemies) {
-            if (state.id === gameArea.allEnemies[c].id) {
-                gameArea.allEnemies[c] = state
-                break
-            }
+        if ((gunshot.y < obstacle.Bottom && gunshot.y > obstacle.Bottom-5) && (gunshot.x < obstacle.Right && gunshot.x > obstacle.Left))
+          currentPlayer.gunshots.splice(c, 1)
+
+        if ((gunshot.x > obstacle.Left && gunshot.x < obstacle.Left+5) && (gunshot.y > obstacle.Top && gunshot.y < obstacle.Bottom))
+          currentPlayer.gunshots.splice(c, 1)
+        
+        if ((gunshot.x < obstacle.Right && gunshot.x > obstacle.Right-5) && (gunshot.y > obstacle.Top && gunshot.y < obstacle.Bottom))
+          currentPlayer.gunshots.splice(c, 1)
+      }
+
+
+      // enemy gunshots collision
+      for (var c in allEnemies) {
+        var enemy = allEnemies[c]
+
+        for (var count in enemy.gunshots) {
+          var gunshot = enemy.gunshots[count]
+
+          if ((gunshot.y > obstacle.Top && gunshot.y < obstacle.Top+5) && (gunshot.x < obstacle.Right && gunshot.x > obstacle.Left))
+            enemy.gunshots.splice(count, 1)
+          
+          if ((gunshot.y < obstacle.Bottom && gunshot.y > obstacle.Bottom-5) && (gunshot.x < obstacle.Right && gunshot.x > obstacle.Left))
+            enemy.gunshots.splice(count, 1)
+
+          if ((gunshot.x > obstacle.Left && gunshot.x < obstacle.Left+5) && (gunshot.y > obstacle.Top && gunshot.y < obstacle.Bottom))
+            enemy.gunshots.splice(count, 1)
+          
+          if ((gunshot.x < obstacle.Right && gunshot.x > obstacle.Right-5) && (gunshot.y > obstacle.Top && gunshot.y < obstacle.Bottom))
+            enemy.gunshots.splice(count, 1)          
         }
-    }
-})
-
-socket.on('player-dead', (state) => {
-    console.log('O joador morreu: ', state)
-})
+      }
 
 
-// -------------------- Game --------------------------
+      // Ver forma ao redor dos obstaculos
+      // context.beginPath()
+      // context.rect(obstacle.Left, obstacle.Top, obstacle.Right-obstacle.Left, obstacle.Bottom-obstacle.Top)
+      // context.rect(currentPlayer.x-25, currentPlayer.y-25, 50, 50)
+      // context.stroke()
 
-var canvas = document.querySelector("canvas")
+    }  
 
-var gameArea = {
-    ctx: canvas.getContext('2d'),
-    myTank: new Image(),
-    enemyTank: new Image(),
-    keys: [],
-    allEnemies: [],
+  })();
+
 }
-
-var player = {
-    x: 200,
-    y: 200,
-    moveAngle: 0,
-    speed: 0,
-    velocity: 0,
-    angle: 0,
-    shots: [],
-    id: null,
-    life: 100,
-}
-
-var oldState = {...player}
-
-gameArea.myTank.src = "./images/i_tank.png"
-gameArea.enemyTank.src = "./images/enemy.png"
-
-
-window.addEventListener('keydown', (key) => {
-    gameArea.keys[key.key] = (key.type === "keydown")
-
-    if (key.code === 'Space') {
-        if (player.shots.length < 2)
-            player.shots.push(new Shoot())
-    }
-})
-
-window.addEventListener('keyup', (key) => {
-    if (key.key === 'w') {
-        console.log("my Player: ", player.x, player.y)
-
-        for (var enemy of gameArea.allEnemies) {
-            console.log('Inimigo: ', enemy.x, enemy.y)
-        }
-    }
-    gameArea.keys[key.key] = (key.type == "keydown")
-})
 
 function walkCollision() {
-    if (player.y-20 < 0) {
-        player.y+=4
+
+  // my tank collision
+  var playerX = parseInt(currentPlayer.x-25)
+  var playerY = parseInt(currentPlayer.y-25)
+
+  if (playerX+50 > context.canvas.width)
+    currentPlayer.x -= currentPlayer.velocity
+  
+  if (playerX < 0)
+    currentPlayer.x += currentPlayer.velocity
+
+  if (playerY+50 > context.canvas.height)
+    currentPlayer.y -= currentPlayer.velocity
+
+  if (playerY < 0)
+    currentPlayer.y += currentPlayer.velocity
+  
+  
+  // my gunshots collision
+  for (var index in currentPlayer.gunshots) {
+    var gunshot = currentPlayer.gunshots[index]
+
+    if (
+      (gunshot.x > context.canvas.width) ||
+      (gunshot.x < 0) ||
+      (gunshot.y > context.canvas.height) ||
+      (gunshot.y < 0)
+    ) {
+
+      currentPlayer.gunshots.splice(index, 1)
+
+      Observer()
     }
-    if (player.y+20 > canvas.height) {
-        player.y-=4
+  }
+
+  // enemy gunshots collision
+  for (enemy of allEnemies) {
+    for (var index in enemy.gunshots) {
+      var gunshot = enemy.gunshots[index]
+  
+      if (
+        (gunshot.x > context.canvas.width) ||
+        (gunshot.x < 0) ||
+        (gunshot.y > context.canvas.height) ||
+        (gunshot.y < 0)
+      ) {
+        console.log("bala inimiga saiu da tela")
+        enemy.gunshots.splice(index, 1)
+      }
     }
-    if (player.x-20 < 0) {
-        player.x+=4
-    }
-    if (player.x+20 > canvas.width) {
-        player.x-=4
-    }
+  
+  }  
+  
 }
 
 function Observer() {
-    console.log('Atualizando')
+  console.log("[Enviando State]")
 
-    socket.emit('update-state', player)
-}
-
-function handleKeyPressed() {
-
-    player.moveAngle = 0
-    player.speed = 0
+  socket.emit('player-move', {
+    id: currentPlayer.id,
+    x: currentPlayer.x,
+    y: currentPlayer.y,
+    angle: currentPlayer.angle,
+    directionAngle: currentPlayer.directionAngle,
+    gunshots: currentPlayer.gunshots
+  })
     
-
-    if (gameArea.keys["ArrowUp"])
-        player.speed = 4
-             
-    if (gameArea.keys['ArrowDown'])
-        player.speed = -4
-
-    if (gameArea.keys['ArrowLeft'])
-        player.moveAngle = -4
-
-    if (gameArea.keys['ArrowRight'])
-        player.moveAngle = 4
-
-    // Update position
-    player.angle += player.moveAngle*Math.PI/180
-
-    player.x += player.speed*Math.sin(player.angle)
-    player.y -= player.speed*Math.cos(player.angle)
-
-    walkCollision()
-
 }
 
-class Shoot {
-    id = Math.random()
-    x = player.x
-    y = player.y
-    defaultAngle = player.angle
-}
+function tanksCollisions() {
+  for (var enemy of allEnemies) {
+    var enemyX = enemy.x-19
+    var enemyY = enemy.y-19
 
-function keepState() {
+    var playerX = currentPlayer.x-19
+    var playerY = currentPlayer.y-19
 
-    var currentPlayer = Object.keys(player)
-
-    for (var c of currentPlayer) {
-        if (c !== 'shots') {
-            if (oldState[c] !== player[c]) {
-                oldState = {...player}
-                Observer()
-            }
-        } else {
-            if (player.shots.length !== oldState.shots.length ) {
-
-                oldState = {...player}
-                Observer()
-            }
-        }
+    if ((playerX > enemyX-42) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX < enemyX)) { // Esquerda
+      currentPlayer.x -= 4
     }
 
+    if ((playerX-42 < enemyX) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX > enemyX)) { // Direita
+      currentPlayer.x += 4
+    }
+
+    if ((playerY > enemyY-42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY < enemyY)) { // Cima
+      currentPlayer.y -= 4
+    }
+
+    if ((playerY < enemyY+42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY > enemyY)) { // Baixo
+      currentPlayer.y += 4
+    }
+  }
 }
 
-function updateShoots() {
+function gunshotCollision() {
+  for (var enemy of allEnemies) {
 
-    var refeshShoots = []
-    for (var shot of player.shots) { // Atualiza os proprios tiros
+    // my gunshots collision
+    for (var c in currentPlayer.gunshots) {
+      var enemyX = enemy.x
+      var enemyY = enemy.y
 
-        shot.x += 5*Math.sin(shot.defaultAngle)
-        shot.y -= 5*Math.cos(shot.defaultAngle)
+      var gunshotX = currentPlayer.gunshots[c].x
+      var gunshotY = currentPlayer.gunshots[c].y
 
-        gameArea.ctx.save()
-        gameArea.ctx.translate(shot.x, shot.y) 
-        gameArea.ctx.rotate(shot.defaultAngle)
+      if ((gunshotX > enemyX-20) && (gunshotX < enemyX+20) && (gunshotY > enemyY-20) && (gunshotY < enemyY+25)) {
+        console.log('Colisão')
 
-        gameArea.ctx.beginPath()
-        gameArea.ctx.rect(1, 5, 2, 10)
-        gameArea.ctx.stroke()
+        socket.emit('gunshot-collision', {
+          playerGunshot: currentPlayer.id,
+          enemy: enemy.id,
+          gunshotPosition: c
+        })
 
-        gameArea.ctx.restore()
-        
-        if (shot.y < canvas.height && shot.y > 0 && shot.x < canvas.width && shot.x > 0) {
-            refeshShoots.push(shot)
-        }
-
+        currentPlayer.gunshots.splice(c, 1)
+      } 
     }
-    player.shots = refeshShoots
 
-
-    for (var p of gameArea.allEnemies) { // Desenha as balas inimigas
-        for (shot of p.shots) {
-
-            shot.x += 5*Math.sin(shot.defaultAngle)
-            shot.y -= 5*Math.cos(shot.defaultAngle)
-    
-            gameArea.ctx.save()
-            gameArea.ctx.translate(shot.x, shot.y) 
-            gameArea.ctx.rotate(shot.defaultAngle)
-    
-            gameArea.ctx.beginPath()
-            gameArea.ctx.rect(1, 5, 2, 10)
-            gameArea.ctx.stroke()
-    
-            gameArea.ctx.restore()
-
-        }
-    }
-    
+  }
 
 }
 
-function collisions() {
-    for (var enemy of gameArea.allEnemies) {
-        var enemyX = enemy.x-19
-        var enemyY = enemy.y-19
-        
-        var playerX = player.x-19
-        var playerY = player.y-19
+function playerDead() {
+  if (currentPlayer.life <= 0) {
+    heartUpdate('player-dead', currentPlayer.id)
 
-        // gameArea.ctx.beginPath()
-        // gameArea.ctx.rect(enemyX, enemyY, 46, 46)
-        // gameArea.ctx.stroke()
-
-
-        if ((playerX > enemyX-42) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX < enemyX-37)) { // Esquerda
-            player.x -= 4
-        }
-
-        if ((playerX-42 < enemyX) && (playerY < enemyY+37) && (playerY > enemyY-37) && (playerX-37 > enemyX)) { // Direita
-            player.x += 4
-        }
-
-        if ((playerY > enemyY-42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY < enemyY-37)) { // Cima
-            player.y -= 4
-        }
-
-        if ((playerY < enemyY+42) && (playerX > enemyX-37) && (playerX < enemyX+37) && (playerY-37 > enemyY)) { // Baixo
-            player.y += 4
-        }
-
-    }
-}
-
-function shootCollision() {
-    
-    for (var enemy in gameArea.allEnemies) {
-
-        var refeshShoots = []
-        for (var shoot of gameArea.allEnemies[enemy].shots) { // Atualizar tiros dos inimigos (vazamento de memoria)
-            if (shoot.y < canvas.height && shoot.y > 0 && shoot.x < canvas.width && shoot.x > 0) {
-                refeshShoots.push(shoot)
-                console.log("Atualizando bala inimiga")
-            }
-        }
-        gameArea.allEnemies[enemy].shots = refeshShoots
-
-
-        var myShootRefresh = []
-        for (var myShoot of player.shots) {
-            var enemyX = gameArea.allEnemies[enemy].x
-            var enemyY = gameArea.allEnemies[enemy].y
-
-            var shootX = myShoot.x
-            var shootY = myShoot.y
-
-            if (!((shootX > enemyX-25) && (shootX < enemyX+25) && (shootY > enemyY-20) && (shootY < enemyY+20))) {
-                myShootRefresh.push(myShoot)
-            } else {
-                gameArea.allEnemies[enemy].life -= 20
-
-                socket.emit('update-state', gameArea.allEnemies[enemy])
-            }
-            
-        }
-        player.shots = myShootRefresh
-        
-    }
-}
-
-function drawItems() {
-
-    // draw my tank
-    gameArea.ctx.save()
-    gameArea.ctx.translate(player.x, player.y)
-    gameArea.ctx.rotate(player.angle)
-    gameArea.ctx.drawImage(gameArea.myTank, -gameArea.myTank.width/2, -gameArea.myTank.height/2);  
-    gameArea.ctx.restore()
-
-    // draw enemy tanks
-    for (var p of gameArea.allEnemies) {
-        gameArea.ctx.save()
-        gameArea.ctx.translate(p.x, p.y) 
-        gameArea.ctx.rotate(p.angle)
-        gameArea.ctx.drawImage(gameArea.enemyTank, -50/2, -50/2);  
-        gameArea.ctx.restore()
-    }
-
-    // gameArea.ctx.beginPath()
-    // gameArea.ctx.rect(player.x-25, player.y-25, 50, 50)
-    // gameArea.ctx.stroke()
-
-    // Names
-    gameArea.ctx.font = "10px Arial"
-    
-    var userName = String(player.id).length > 10 ? String(player.id).substring(0, 10)+'...' : player.id
-    var txtWidth = gameArea.ctx.measureText(userName).width
-
-    gameArea.ctx.fillText(userName, player.x-txtWidth/2, player.y+40) // my payer name
-
-
-    for (var enemy of gameArea.allEnemies) { // All enemies name
-        var userName = String(enemy.id).length > 10 ? String(enemy.id).substring(0, 10)+'...' : enemy.id
-        var txtWidth = gameArea.ctx.measureText(userName).width
-    
-        gameArea.ctx.fillText(userName, enemy.x-txtWidth/2, enemy.y+40)
-    }
-
-
-    // Lifes
-    var txtLife = player.life+' ❤'
-    var txtWidth = gameArea.ctx.measureText(txtLife).width
-
-    gameArea.ctx.fillText(txtLife, player.x+20-txtWidth, player.y-30) // my payer name
-
-    for (var enemy of gameArea.allEnemies) { // All enemies name
-        var txtLife = enemy.life+' ❤'
-        var txtWidth = gameArea.ctx.measureText(txtLife).width
-    
-        gameArea.ctx.fillText(txtLife, enemy.x+20-txtWidth, enemy.y-30)
-    }
-
-
-}
-
-function dead() {
-    
-    if (player.life === 0) {
-        alert("Você morreu")
+    currentPlayer = {
+      name: 'Jogador',
+      id: currentPlayer.id,
+      x: 200,
+      y: 200,
+      angle: 0,
+      directionAngle: 0,
+      speed: 0,
+      velocity: 4,
+      life: 100,
+      gunshots: [],
+      play: false,
+      kills: 0,
     }
     
+    document.querySelector('.blur-screen').style.display = 'block'
+    document.querySelector('.dead-screen').style.left = "50%"
+
+    socket.emit('player-dead', currentPlayer.id)
+  }
 }
 
 function renderScreen() {
-    gameArea.ctx.clearRect(0, 0, canvas.width, canvas.height) 
+
+  drawAtScreen()
+  keysPressed()
+  walkCollision()
+  tanksCollisions()
+  gunshotCollision()
+  ObstaclesMap()
+  playerDead()
 
 
 
-    drawItems()
-
-    updateShoots()
-
-    shootCollision()
-    
-    keepState()
-
-    handleKeyPressed()
-
-    collisions()
-
-    dead()
-
-    requestAnimationFrame(renderScreen)
+  requestAnimationFrame(renderScreen)
 }
-
 
 renderScreen()

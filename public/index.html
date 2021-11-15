@@ -26,20 +26,18 @@
         <div class="error-msg"></div>
     </div>
 
-    <div class="dead-screen">
+    <div class="dead-container">
         <div class="logo-container">
-            <img src="./images/dead-screen.png"/>
-        </div>
-        <div class="actions-container">
-            <div class="info-dead">Kills: <span class="result-info-dead">5 tanks</span></div>
-            <div class="info-dead">Tempo de sobrevivencia: <span class="result-info-dead">50 segundos</span></div>
-            <div class="dead-btns-container">
-                <button class="btn btn-play" onclick="newGame()">Continuar</button>
-            </div>
+            <img src="./images/disconnected.png"/>
         </div>
 
-        <div class="error-msg"></div>
+        <div class="actions-container">
+            <div class="btns-container">
+                <button class="btn btn-play" style="width: 100%;" onclick="window.location.reload()">Reconectar</button>
+            </div>
+        </div>
     </div>
+    
     
     <div class="game-container">
         <canvas width="1500px" height="800px"></canvas>
@@ -54,30 +52,11 @@
     <div id="heart-progress-bar"></div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="./moviments.js" ></script>
     <script src="./game.js"></script>
-    <script src="https://kit.fontawesome.com/c9a35cf9ec.js" crossorigin="anonymous"></script>
-
-    <script type="application/javascript">
-        document.querySelector('.blur-screen').style.width = document.body.offsetWidth + 'px'
-
-        // save name at local storage
-        const localName = localStorage.getItem('player_name')
-
-        if (localName !== null) {
-            document.querySelector('input').value = localName
-        }
-
-        function newGame() {
-            document.querySelector('.dead-screen').style.left = "150%"
-
-            setTimeout(() => {
-                document.querySelector('.blur-screen').style.display = 'block'
-                document.querySelector('.initial-container').style.display = 'block'
-            }, 600)
-        }
-
-    </script>
+    <script src="./script.js"></script>
+    <script src="./moviments.js"></script>
+    <script src="./drawStructure.js"></script>
+    
 
 
 </body>
