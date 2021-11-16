@@ -1,9 +1,12 @@
 html, body {
     margin: 0;
     width: max-content;
+    scroll-behavior: smooth;
+
 }
 body {
     /* overflow: hidden; */
+    background-color: #857d4d;
 }
 
 .game-container {
@@ -11,6 +14,19 @@ body {
     width: max-content;
     border: solid 3px rgba(160, 126, 126, 0.486);
 }
+
+@media screen and (max-width: 1000px) {
+    .game-container {
+        height: 120vh;
+        width: 120vw;
+        border: solid 1px red;
+        overflow: hidden;
+    }
+    .body {
+        overflow: hidden;
+    }
+}
+
 progress {
     position: absolute;
     width: 40px;

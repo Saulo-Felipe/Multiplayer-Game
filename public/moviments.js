@@ -11,7 +11,9 @@ function keysPressed(event) {
         gameArea.keys[keyPosition] = event.code
       else 
         gameArea.keys.splice(keyPosition, 1)
-   
+
+    } else if (event.code === 'Space' && event.type === 'keydown') {
+      gameArea.newGunshot()
     }
   }
 }
@@ -19,5 +21,7 @@ function keysPressed(event) {
 setInterval(() => {
   for (var key of gameArea.keys) {
     gameArea.movePlayer(key)
+
+    mobileScreen(key)
   }
-}, 50);
+}, 20);

@@ -42,12 +42,14 @@ const gameArea = {
   disconnected,
   movePlayer,
   receiveMoviment,
+  newGunshot,
 }
 
 
 function setState(state) {
   console.log('[State] --> ', state)
-  gameArea.players = {...state}
+
+  Object.assign(gameArea.players, state)
 }
 
 function createPlayer(newPlayer) {
@@ -72,13 +74,28 @@ function disconnected() {
 }
 
 function movePlayer(key) {
-  console.log('[Send Moviment] --> ', socket.id)
+  // console.log('[Send Moviment] --> ', socket.id)
 
   socket.emit('move-player', {id: socket.id, type: key})
 }
 
 function receiveMoviment(newMoviment) {
-  console.log('[Receive Moviment] --> ', newMoviment.id)
+  // console.log('\n[Receive Moviment] --> ', newMoviment.id)
 
-  gameArea.players[newMoviment.id] = {...newMoviment}
+  Object.assign(gameArea.players[newMoviment.id], newMoviment)  
+}
+
+function newGunshot() {
+  console.log('[Gunshot]')
+
+  var player = gameArea.players[socket.id]
+
+  gameArea.players[socket.id].gunshots[Math.floor(Date.now() * Math.random()).toString(36)] = {
+    id: socket.id,
+    x: player.x,
+    y: player.y,
+    angle: player.angle,
+  }
+
+  // socket.emit('new-gunshot', socket.id)
 }
