@@ -19,14 +19,42 @@ const gameArea = {
   canvasWidth: 1500,
   canvasHeight: 800,
   players: {},
+  gunshots: {},
+  collisionPositions: [
+    { x: 591+(180/2)-10, y: 411+(206/2)+30, radius: 75 },
+
+    // Truck car collision
+    { x: 319+(55/2), y: 276+(55/2), radius: 27.5 },
+    { x: 330+(55/2), y: 254+(55/2), radius: 27.5 },
+    { x: 342+(55/2), y: 224+(55/2), radius: 27.5 },
+    { x: 351+(55/2), y: 200+(55/2), radius: 27.5 },
+    { x: 362+(55/2), y: 169+(55/2), radius: 27.5 },
+    { x: 374+(55/2), y: 145+(55/2), radius: 27.5 },
+
+    // barricade collision
+    { x: 1141+(18/2), y: 198+(18/2), radius: 9 },
+    { x: 1149+(18/2), y: 209+(18/2), radius: 9 },
+    { x: 1157+(18/2), y: 215+(18/2), radius: 9 },
+    { x: 1165+(18/2), y: 224+(18/2), radius: 9 },
+    { x: 1175+(18/2), y: 233+(18/2), radius: 9 },
+    { x: 1184+(18/2), y: 242+(18/2), radius: 9 },
+    { x: 1193+(18/2), y: 251+(18/2), radius: 9 },
+    { x: 1202+(18/2), y: 258+(18/2), radius: 9 },
+    { x: 1211+(18/2), y: 267+(18/2), radius: 9 },
+
+    { x: 1054+11, y: 613+11, radius: 11 },
+    { x: 1054+11, y: 713+11, radius: 11 },
+    { x: 1053+14.5, y: 491+14.5, radius: 14.5 },
+  ],
+  pushCollisionPos,
   createPlayer,
   deletePlayer,
   movePlayer,
   sendMoviment,
   obstaclesCollision,
   newGunshot,
+  sendGunshot,
 }
-
 
 io.on('connection', (socket) => {
   console.log('[New player] --> ', socket.id)
@@ -49,16 +77,44 @@ io.on('connection', (socket) => {
   })
 
   socket.on('move-player', (newMoviment) => {
-    gameArea.movePlayer(newMoviment)
-    
-    gameArea.sendMoviment(gameArea.players[newMoviment.id])
+    gameArea.movePlayer(newMoviment)    
   })
 
   socket.on('new-gunshot', (playerID) => {
-    gameArea.newGunshot(playerID)
+    var newShot = gameArea.newGunshot(playerID)
+
+    gameArea.sendGunshot(newShot)
   })
 
-})
+});
+
+gameArea.pushCollisionPos()
+
+function pushCollisionPos() {
+  var rectanglesCollision = [
+    {x: 69, y: 265, radius: 12.5, end: 213, horizontal: true},
+    {x: 95, y: 521, radius: 15, end: 265, horizontal: true},
+    {x: 297, y: 630, radius: 15, end: 731, vertical: true},
+    {x: 560, y: 215, radius: 11.5, end: 790, horizontal: true},
+    {x: 1154, y: 0, radius: 11.5, end: 117, vertical: true},
+    {x: 1312, y: 288, radius: 11.5, end: 1423, horizontal: true},
+    {x: 1180, y: 525, radius: 16.5, end: 606, vertical: true},
+    {x: 1361, y: 525, radius: 16.5, end: 606, vertical: true},
+    {x: 1356, y: 705, radius: 19, end: 800, vertical: true},  
+    {x: 719, y: 515, radius: 25, end: 580, vertical: true},  
+  ]
+  for (var rect of rectanglesCollision) {
+    var initialPos = rect.horizontal ? rect.x : rect.y
+  
+    for (var c=initialPos; c < rect.end; c+=rect.radius) {
+      gameArea.collisionPositions.push({
+        x: rect.horizontal ? c : rect.x+rect.radius,
+        y: rect.vertical ? c : rect.y+rect.radius,
+        radius: rect.radius
+      })
+    }
+  }
+}
 
 function createPlayer(id) {
   gameArea.players[id] = {
@@ -134,72 +190,94 @@ function obstaclesCollision(playerMoveID) {
 
   if (newPlayerY-25 < 0 || newPlayerY+25 > gameArea.canvasHeight)
     haveCollision.y = true
-  
+
+
+  // Circle Collisions
+  var tank = { x: newPlayerX, y: newPlayerY, radius: 25 }
+
+  for (var obstacle of gameArea.collisionPositions) {
+    let dx = obstacle.x - tank.x
+    let dy = obstacle.y - tank.y
+
+    let distance = Math.sqrt(dx*dx + dy*dy)
+    let sumRadios = tank.radius + obstacle.radius
+
+    if (distance < sumRadios) {
+      let removeSpace = distance-sumRadios 
+
+      if (tank.x < obstacle.x)
+        newPlayerX += removeSpace/2
+      
+      if (tank.x > obstacle.x)
+        newPlayerX -= removeSpace/2
+        
+      if (tank.y < obstacle.y)
+        newPlayerY += removeSpace/2
+      
+      if (tank.y > obstacle.y)
+        newPlayerY -= removeSpace/2
+    }
+  }
 
   // Rectangles collisions
   let tankLeft = newPlayerX - 25
   let tankRight = newPlayerX + 25
   let tankUp = newPlayerY - 25
   let tankBottom = newPlayerY + 25
-
+  
   const rectsPositions = [
-    {Left: 92, Top: 526, Bottom: 549, Right: 270},
+    {Left: 1059, Top: 496, Bottom: 620, Right: 1072},
+    {Left: 1059, Top: 723, Bottom: 800, Right: 1072},
+    {Left: 1072, Top: 496, Bottom: 509, Right: 1500},
   ]
 
   for (var obstacle of rectsPositions) {
     const xCondition = tankLeft < obstacle.Right && tankRight > obstacle.Left
     const yCondition = tankBottom > obstacle.Top && tankUp < obstacle.Bottom
 
-    if (tankBottom > obstacle.Top && tankBottom < obstacle.Top+10 && xCondition) {
+    if (tankBottom > obstacle.Top && tankBottom < obstacle.Top+5 && xCondition)
       haveCollision.y = true
-    }
 
-    if (tankUp < obstacle.Bottom && tankUp > obstacle.Bottom-10 && xCondition) {
+    else if (tankUp < obstacle.Bottom && tankUp > obstacle.Bottom-5 && xCondition)
       haveCollision.y = true
-    }
 
-    if (tankRight > obstacle.Left && tankRight < obstacle.Left+10 && yCondition) {
+    else if (tankRight > obstacle.Left && tankRight < obstacle.Left+5 && yCondition)
       haveCollision.x = true
-    }
 
-    if (tankLeft < obstacle.Right && tankLeft > obstacle.Right-10 && yCondition) {
+    else if (tankLeft < obstacle.Right && tankLeft > obstacle.Right-5 && yCondition)
       haveCollision.x = true
-    }
   }
 
+  // Tanks collision
+  for (var currentIndex in gameArea.players) {
+    const tankPlayer = gameArea.players[currentIndex]
 
-  // Circle collisions
-
-  const circleObstacles = [
-    { x: 591+(180/2)-10, y: 411+(206/2)+30, radius: 75 },
-  ]
-
-  var tank = { x: newPlayerX, y: newPlayerY, radius: 25 }
-
-  for (var obstacle of circleObstacles) {
-    let dx = obstacle.x - tank.x
-    let dy = obstacle.y - tank.y
-
-    let distance = Math.sqrt(dx*dx + dy*dy)
-    let sumRadios = tank.radius + obstacle.radius
-    
-    if (distance < sumRadios) { // My tank collision
-
-      if (tank.x < dx)
-        haveCollision.x = true
-
-      else if (tank.x > dx)    
-        haveCollision.x = true
+    if (tankPlayer.id !== playerMoveID) {
+      let dx = tankPlayer.x - tank.x
+      let dy = tankPlayer.y - tank.y
   
-      if (tank.y < obstacle.y)
-        haveCollision.y = true
+      let distance = Math.sqrt(dx*dx + dy*dy)
+      let sumRadios = tank.radius + 25
+
+
+      if (distance < sumRadios) {
+        let removeSpace = distance-sumRadios 
   
-      else if (tank.y > obstacle.y)
-        haveCollision.y = true
+        if (tank.x < tankPlayer.x)
+          newPlayerX += removeSpace/2
+        
+        if (tank.x > tankPlayer.x)
+          newPlayerX -= removeSpace/2
+          
+        if (tank.y < tankPlayer.y)
+          newPlayerY += removeSpace/2
+        
+        if (tank.y > tankPlayer.y)
+          newPlayerY -= removeSpace/2
+      }
+
     }
-
   }
-
 
 
   if (haveCollision.x === false)
@@ -216,11 +294,18 @@ function obstaclesCollision(playerMoveID) {
 
 
 function newGunshot(playerID) {
-  // gameArea.players[playerID].gunshots[uuid()] = {
-  //   userID: playerID,
-  // }
+  const playerShot = gameArea.players[playerID]
+  
+  return gameArea.gunshots[uuid()] = {
+    id: playerID,
+    x: playerShot.x,
+    y: playerShot.y,
+    angle: playerShot.angle,
+  }
+}
 
-  console.log("Tiro adicionado: ", gameArea.players[playerID])
+function sendGunshot(gunshot) {
+  io.sockets.emit('receive-gunshot', gunshot)
 }
 
 

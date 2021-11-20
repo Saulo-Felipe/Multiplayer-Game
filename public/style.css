@@ -5,7 +5,7 @@ html, body {
 
 }
 body {
-    /* overflow: hidden; */
+    overflow: hidden;
     background-color: #857d4d;
 }
 
@@ -75,10 +75,10 @@ progress {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 120vh;
     background-image: url('./images/background-blur.jpeg');
     opacity: 0.7;
-
+    z-index: 1;
 }
 
 .initial-container {
@@ -87,9 +87,10 @@ progress {
     height: 500px;
     background-color: white;
     left: 50%;
-    top: 40%;
+    top: 50%;
     transform: translate(-50%, -50%);
     border-radius: 5px;
+    z-index: 2;
 }
 
 .logo-container {
@@ -143,10 +144,11 @@ progress {
     height: 500px;
     background-color: white;
     left: -150%;
-    top: 40%;
+    top: 50%;
     transform: translate(-50%, -50%);
     border-radius: 5px;
     transition: 0.5s;
+    z-index: 2;
 }
 .dead-container  img {
     margin-top: 50px;

@@ -24,6 +24,9 @@ socket.on('receive-moviment', (newMoviment) => {
   gameArea.receiveMoviment(newMoviment)
 })
 
+socket.on('receive-gunshot', (newShot) => {
+  gameArea.addGunshot(newShot)
+})
 
 // -------------------- GAME ----------------------
 
@@ -35,6 +38,7 @@ const gameArea = {
   canvasWidth: 1500,
   canvasHeight: 800,
   players: {},
+  gunshots: [],
   keys: [],
   createPlayer,
   deletePlayer,
@@ -43,6 +47,7 @@ const gameArea = {
   movePlayer,
   receiveMoviment,
   newGunshot,
+  addGunshot,
 }
 
 
@@ -86,16 +91,12 @@ function receiveMoviment(newMoviment) {
 }
 
 function newGunshot() {
-  console.log('[Gunshot]')
+  console.log('[Send Gunshot]')
 
-  var player = gameArea.players[socket.id]
+  socket.emit('new-gunshot', socket.id)
+}
 
-  gameArea.players[socket.id].gunshots[Math.floor(Date.now() * Math.random()).toString(36)] = {
-    id: socket.id,
-    x: player.x,
-    y: player.y,
-    angle: player.angle,
-  }
-
-  // socket.emit('new-gunshot', socket.id)
+function addGunshot(newShot) {
+  gameArea.gunshots.push(newShot)
+  console.log("Todos os tiros: ", gameArea.gunshots)
 }
