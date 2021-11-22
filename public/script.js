@@ -1,10 +1,25 @@
+window.addEventListener('load', () => pageLoad())
+
 function play() {
-  socket.connect()
+  var input = document.querySelector('input')
 
-  document.querySelector('.blur-screen').style.display = 'none'
-  document.querySelector('.initial-container').style.display = 'none'
+  if (input.value.length > 0) {
+    socket.connect()
+
+    document.querySelector('.blur-screen').style.display = 'none'
+    document.querySelector('.initial-container').style.display = 'none'
+
+    localStorage.setItem('player_name', input.value)
+  } else {
+    const errorMsg =  document.querySelector('.error-msg')
+
+    errorMsg.innerHTML = 'Digite um nome de jogador para poder jogar.'
+
+    setTimeout(() => {
+      errorMsg.innerHTML = ''
+    }, 3000);
+  }
 }
-
 
 function mobileScreen(key) {
   const player = gameArea.players[socket.id]
@@ -21,3 +36,9 @@ function mobileScreen(key) {
   }
 }
 
+function pageLoad() {
+  var playerName = localStorage.getItem('player_name')
+  if (playerName !== null) {
+    document.querySelector('input').value = playerName  
+  }
+}

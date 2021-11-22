@@ -54,6 +54,8 @@ const gameArea = {
   obstaclesCollision,
   newGunshot,
   sendGunshot,
+  updateGunshot,
+  collisionGunshot,
 }
 
 io.on('connection', (socket) => {
@@ -61,7 +63,9 @@ io.on('connection', (socket) => {
 
   gameArea.createPlayer(socket.id)
 
-  socket.emit('initial-state', gameArea.players)
+  socket.emit('initial-state', gameArea.players, (state) => {
+    gameArea.players[state.playerID].name = state.name
+  })
 
   socket.broadcast.emit('add-player', gameArea.players[socket.id])
 
@@ -87,6 +91,11 @@ io.on('connection', (socket) => {
   })
 
 });
+
+setInterval(() => {
+  gameArea.updateGunshot()
+}, 20);
+
 
 gameArea.pushCollisionPos()
 
@@ -292,7 +301,6 @@ function obstaclesCollision(playerMoveID) {
 
 }
 
-
 function newGunshot(playerID) {
   const playerShot = gameArea.players[playerID]
   
@@ -308,5 +316,24 @@ function sendGunshot(gunshot) {
   io.sockets.emit('receive-gunshot', gunshot)
 }
 
+function updateGunshot() {
+  for (var i in gameArea.gunshots) {
+    var gunshot = gameArea.gunshots[i]
+
+    gunshot.x += 6*Math.sin(gunshot.angle)
+    gunshot.y -= 6*Math.cos(gunshot.angle)
+
+    gameArea.collisionGunshot(gunshot, i)
+  }
+}
+
+function collisionGunshot(gunshot, indice) {
+
+  if (gunshot.x < 0 || gunshot.y < 0 || gunshot.y > gameArea.canvasHeight || gunshot.x > gameArea.canvasWidth) {
+    console.log("COlisão, bala removida")
+
+    delete gameArea.gunshots[indice]
+  }
+}
 
 server.listen(process.env.PORT || 8081, () => console.log('Server is running!'))

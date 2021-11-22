@@ -12,8 +12,16 @@ socket.on('delete-player', (playerID) => {
   gameArea.deletePlayer(playerID)
 })
 
-socket.on('initial-state', (state) => {
+socket.on('initial-state', (state, callback) => {
   gameArea.setState(state)
+
+  // send playername to backend
+  gameArea.players[socket.id].name = localStorage.getItem('player_name')
+
+  callback({
+    playerID: gameArea.players[socket.id].id, 
+    name: gameArea.players[socket.id].name 
+  })
 })
 
 socket.on('add-player', (player) => {
@@ -48,6 +56,8 @@ const gameArea = {
   receiveMoviment,
   newGunshot,
   addGunshot,
+  gunshotCollision,
+  updateGunshots,
 }
 
 
@@ -98,5 +108,28 @@ function newGunshot() {
 
 function addGunshot(newShot) {
   gameArea.gunshots.push(newShot)
-  console.log("Todos os tiros: ", gameArea.gunshots)
 }
+
+function updateGunshots() {
+
+  for (var i in gameArea.gunshots) {
+    var gunshot = gameArea.gunshots[i]
+
+    gunshot.x += 6*Math.sin(gunshot.angle)
+    gunshot.y -= 6*Math.cos(gunshot.angle)
+
+    gunshotCollision(gunshot, i)
+  }
+}
+
+function gunshotCollision(gunshot, i) {
+  // walk Collision
+
+  if (gunshot.x < 0 || gunshot.y < 0 || gunshot.y > gameArea.canvasHeight || gunshot.x > gameArea.canvasWidth) {
+    gameArea.gunshots.splice(i, 1)
+    console.log('Colisão')
+
+    console.log("Tiros atualizados: ", gameArea.gunshots)
+  }
+}
+

@@ -3,9 +3,9 @@ const screenElements = {
   myTank: new Image(),
   enemyTank: new Image(),
   centerObstacle: new Image(),
-  players,
+  drawPlayers,
   drawGunshots,
-  gunshotCollision
+  drawPlayername,
 }
 
 screenElements.map.src = './images/map.png'
@@ -17,26 +17,25 @@ screenElements.centerObstacle.src = './images/center_map.png'
 function renderScreen() {
   ctx.drawImage(screenElements.map, 0, 0)
 
-  screenElements.players()
+  screenElements.drawPlayers()
   screenElements.drawGunshots()
-  screenElements.gunshotCollision()
+  screenElements.drawPlayername()
+  gameArea.updateGunshots()
 
   ctx.drawImage(screenElements.centerObstacle, 591, 411)
 
   requestAnimationFrame(renderScreen)
 }
 
-
-function players() {
+function drawPlayers() {
   for (var c in gameArea.players) {
     const player = gameArea.players[c]
-    
+
     ctx.save()
     ctx.translate(player.x, player.y)
     ctx.rotate(player.angle)
     ctx.drawImage(player.id === socket.id ? screenElements.myTank : screenElements.enemyTank, -screenElements.myTank.width/2, -screenElements.myTank.height/2)
     ctx.restore()
-
   }
 }
 
@@ -53,24 +52,23 @@ function drawGunshots() {
     ctx.stroke()
 
     ctx.restore()
-
-    // update position
-    gunshot.x += 6*Math.sin(gunshot.angle)
-    gunshot.y -= 6*Math.cos(gunshot.angle)
   }
 }
 
-function gunshotCollision() {
-  // walk Collision
-  for (var i in gameArea.gunshots) {
-    var gunshot = gameArea.gunshots[i]
+function drawPlayername() {
+  for (var i in gameArea.players) {
+    const player = gameArea.players[i]
 
-    if (gunshot.x > gameArea.canvasWidth) {
-      gameArea.gunshots.splice(i, 1)
-      console.log("COlisão, bala removida")
-    }
+    ctx.font = "15px monospace"
+
+    let txtPlayername = player.name.length > 10 ? player.name.slice(0, 10) + '...' : player.name
+    let nameWidth = ctx.measureText(txtPlayername).width
+
+
+    ctx.fillText(txtPlayername, player.x-nameWidth/2, player.y+35)
   }
 }
+
 
 
 renderScreen()

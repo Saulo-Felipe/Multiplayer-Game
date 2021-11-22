@@ -12,7 +12,7 @@ body {
 .game-container {
     height: max-content;
     width: max-content;
-    border: solid 3px rgba(160, 126, 126, 0.486);
+    border: solid 3px rgba(160, 126, 126, 0.386);
 }
 
 @media screen and (max-width: 1000px) {
@@ -21,6 +21,7 @@ body {
         width: 120vw;
         border: solid 1px red;
         overflow: hidden;
+        font-family: mo;
     }
     .body {
         overflow: hidden;
