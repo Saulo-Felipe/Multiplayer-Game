@@ -2,8 +2,8 @@ html, body {
     margin: 0;
     width: max-content;
     scroll-behavior: smooth;
-
 }
+
 body {
     overflow: hidden;
     background-color: #857d4d;
@@ -21,7 +21,7 @@ body {
         width: 120vw;
         border: solid 1px red;
         overflow: hidden;
-        font-family: mo;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     }
     .body {
         overflow: hidden;
@@ -34,8 +34,6 @@ progress {
     height: 10px;
 }
 
-
-
 #ranking {
     width: 300px;
     min-height: 100px;
@@ -47,14 +45,17 @@ progress {
     color: white;
     padding: 20px;
 }
+
 #ranking > h2 {
     text-align: center;
 }
+
 .player-ranking {
     display: flex;
     justify-content: space-around;
     margin-top: 20px;
 }
+
 .no-wifi-icon {
     transition: all 0.5s;
     animation-name: noWifi;
@@ -63,12 +64,17 @@ progress {
     position: relative;
     transform: scale(0.7);
 }
+
 @keyframes noWifi {
     33.333% { transform: scale(0.7); }
     66.666% { transform: scale(1); }
     100% { transform: scale(0.7); }
 }
 
+
+.input-healt {
+    position: absolute;
+}
 /* ------------ initial screen --------------- */
 
 .blur-screen {
@@ -154,5 +160,3 @@ progress {
 .dead-container  img {
     margin-top: 50px;
 }
-
-

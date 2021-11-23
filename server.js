@@ -56,6 +56,8 @@ const gameArea = {
   sendGunshot,
   updateGunshot,
   collisionGunshot,
+  updatePlayername,
+  sendLostLife,
 }
 
 io.on('connection', (socket) => {
@@ -64,7 +66,7 @@ io.on('connection', (socket) => {
   gameArea.createPlayer(socket.id)
 
   socket.emit('initial-state', gameArea.players, (state) => {
-    gameArea.players[state.playerID].name = state.name
+    gameArea.updatePlayername(socket, state)
   })
 
   socket.broadcast.emit('add-player', gameArea.players[socket.id])
@@ -129,8 +131,8 @@ function createPlayer(id) {
   gameArea.players[id] = {
     id: id,
     name: 'Jogador',
-    x: Math.floor(Math.random() * 500 + 1),
-    y: Math.floor(Math.random() * 500 + 1),
+    x: Math.floor(120),//Math.random() * 500 + 1),
+    y: Math.floor(130),//Math.random() * 500 + 1),
     angle: 0,
     directionAngle: 0,
     speed: 0,
@@ -329,11 +331,68 @@ function updateGunshot() {
 
 function collisionGunshot(gunshot, indice) {
 
+  // Walk Collision
   if (gunshot.x < 0 || gunshot.y < 0 || gunshot.y > gameArea.canvasHeight || gunshot.x > gameArea.canvasWidth) {
-    console.log("COlisão, bala removida")
-
     delete gameArea.gunshots[indice]
   }
+
+  //player gunshot collision
+  for (var i in gameArea.players) {
+    const player = gameArea.players[i]
+
+    if (player.id !== gunshot.id) {
+      var tank = { x: player.x, y: player.y, radius: 25 }
+
+      let dx = gunshot.x - tank.x
+      let dy = gunshot.y - tank.y
+  
+      let distance = Math.sqrt(dx*dx + dy*dy)
+      let sumRadios = tank.radius + 4
+  
+      if (distance < sumRadios) {
+        delete gameArea.gunshots[indice]
+
+        lostLife({ shooter: gunshot.id, victim: player.id })
+      }
+
+    }
+  }
+
+  // Obstacle collision
+  for (var obstacle of gameArea.collisionPositions) {
+    var dx = gunshot.x - obstacle.x
+    var dy = gunshot.y - obstacle.y
+
+    var distance = Math.sqrt(dx*dx + dy*dy)
+    var sumRadios = obstacle.radius + 4
+
+    if (distance < sumRadios) {
+      delete gameArea.gunshots[indice]
+    }
+  }
+
+}
+
+function updatePlayername(socket, state) {
+  gameArea.players[state.playerID].name = state.name
+  console.log("Enviando nomes")
+  socket.broadcast.emit('player-name', state)
+} 
+
+function lostLife(state) {
+  const { shooter, victim } = state
+
+  console.log('player: ', shooter, 'Atirou em: ', victim)
+
+  gameArea.players[shooter].life -= 10
+
+  gameArea.sendLostLife(victim)
+
+  // Verificar perca do player
+}
+
+function sendLostLife(id) {
+  io.sockets.emit('receive-lost-life', id)
 }
 
 server.listen(process.env.PORT || 8081, () => console.log('Server is running!'))
