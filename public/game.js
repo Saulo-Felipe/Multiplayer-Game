@@ -4,8 +4,8 @@ socket.on('connect', () => {
   console.log('Conectado com o id -> ', socket.id)
 })
 
-socket.on('disconnect', () => {
-  gameArea.disconnected()
+socket.on('disconnect', (reason) => {
+  gameArea.disconnected(reason)
 })
 
 socket.on('delete-player', (playerID) => {
@@ -122,11 +122,12 @@ function deletePlayer(id) {
   delete gameArea.players[id]
 }
 
-function disconnected() {
+function disconnected(reason) {
   console.log('[disconnected]')
-
-  editCurrentScreen('dead-container')
-
+  
+  if (reason !== 'io client disconnect') {
+    editCurrentScreen('disconnected-container')
+  }
 
   socket.disconnect()
 }
@@ -197,8 +198,6 @@ function gunshotCollision(gunshot, i) {
   // walk Collision
   if (gunshot.x < 0 || gunshot.y < 0 || gunshot.y > gameArea.canvasHeight || gunshot.x > gameArea.canvasWidth) {
     gameArea.gunshots.splice(i, 1)
-    console.log('Colisão')
-    console.log("Tiros atualizados: ", gameArea.gunshots)
   }
 
   // Tanks gunshot collisions
@@ -236,7 +235,6 @@ function gunshotCollision(gunshot, i) {
 
       if (distance < sumRadios) {
         gameArea.gunshots.splice(i, 1)
-        console.log("Colisão, novo: ", gameArea.gunshots)
       }
     
     }
@@ -248,25 +246,23 @@ function gunshotCollision(gunshot, i) {
 function deadPlayer(playerID) {
   const player = gameArea.players[playerID]
   delete gameArea.players[playerID]
-  gameArea.playing = false
   
-  if (player.id === socket.id)
+  if (player.id === socket.id) {
     editCurrentScreen('dead-container')
+    gameArea.playing = false
+  }
 
-  gameArea.playersDead.push(new Explosion(player.x, player.y, gameArea.playersDead.length))
+  gameArea.playersDead.push(new Explosion(player.x-75, player.y-75, gameArea.playersDead.length))
 }
 
 function Explosion(x, y, pos) {
-  var x = x
-  var y = y
   var frame = 0
 
   return function update() {
-    frame += 0.15
+    frame += 0.12
 
     screenElements.explosionSprite.src = `./images/explosionFrames/frame${parseInt(frame)}.png`
-
-    ctx.drawImage(screenElements.explosionSprite, 100, 100)
+    ctx.drawImage(screenElements.explosionSprite, x, y)
 
 
     if (frame >= 8) {
@@ -287,6 +283,10 @@ function editCurrentScreen(type) {
       if (!element.classList.contains(`${type}`))
         element.style.left = '-150%'
     }
+
+    // Só chamo a initial screen quando um player morre
+    if (type === "initial-container") socket.disconnect('force')
+
 
     document.querySelector('.blur-screen').style.display = 'block'
     document.querySelector(`.${type}`).style.left = '50%'

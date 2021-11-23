@@ -18,7 +18,9 @@
         <div class="actions-container">
             <input type="text" placeholder="Nome de jogador" minlength="1"/> 
             <div class="btns-container">
-                <button class="btn btn-play" onclick="play()">Jogar</button>
+                <button class="btn btn-play" onclick="play()">
+                    Jogar 
+                </button>
                 <button class="btn btn-spectate">Assistir</button>
             </div>
         </div>
@@ -45,7 +47,7 @@
 
         <div class="actions-container">
             <div class="btns-container">
-                <button class="btn btn-play" style="width: 100%;" onclick="gameArea.editCurrentScreen('dead-container')">Continuar</button>
+                <button class="btn btn-play" style="width: 100%;" onclick="gameArea.editCurrentScreen('initial-container')">Continuar</button>
             </div>
         </div>
     </div>
@@ -60,7 +62,7 @@
 
     </div>
 
-
+    <script src="https://kit.fontawesome.com/c9a35cf9ec.js" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./game.js"></script>
     <script src="./moviments.js"></script>

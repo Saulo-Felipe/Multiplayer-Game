@@ -153,6 +153,9 @@ progress {
     left: -150%;
     top: 50%;
 }
+.dead-container .logo-container {
+    margin-top: 60px;
+}
 
 
 .disconnected-container {
@@ -161,4 +164,20 @@ progress {
 }
 .disconnected-container  img {
     margin-top: 50px;
+}
+
+
+/* Loading spinner  */
+
+.fa-spinner {
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    animation-name: loading;
+}
+
+@keyframes loading {
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(180deg); }
+    75% { transform: rotate(270deg); }
+    100% { transform: rotate(360deg); }
 }

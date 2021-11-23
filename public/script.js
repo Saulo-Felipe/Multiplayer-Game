@@ -1,10 +1,13 @@
 window.addEventListener('load', () => pageLoad())
 
-function play() {
+async function play() {
   var input = document.querySelector('input')
 
   if (input.value.length > 0) {
-    socket.connect()
+    buttonLoading('insert')
+    await socket.connect()
+    buttonLoading('remove')
+
 
     gameArea.playing = true
     editCurrentScreen('remove-all')
@@ -41,4 +44,16 @@ function pageLoad() {
   if (playerName !== null) {
     document.querySelector('input').value = playerName  
   }
+}
+
+
+function buttonLoading(type) {
+  var btn = document.querySelector('.btn-play')
+
+  if (type === 'insert')
+    btn.innerHTML += '<i class="fas fa-spinner"></i>'
+  else
+    btn.innerHTML = 'Jogar'
+
+
 }

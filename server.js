@@ -145,7 +145,11 @@ function createPlayer(id) {
 }
 
 function deletePlayer(id) {
+  console.log("Deletando")
+
   delete gameArea.players[id]
+
+  console.log("\nLista Atualizada")
 }
 
 function movePlayer(newMoviment) {
@@ -376,14 +380,11 @@ function collisionGunshot(gunshot, indice) {
 
 function updatePlayername(socket, state) {
   gameArea.players[state.playerID].name = state.name
-  console.log("Enviando nomes")
   socket.broadcast.emit('player-name', state)
 } 
 
 function lostLife(state) {
   const { shooter, victim } = state
-
-  console.log('player: ', shooter, 'Atirou em: ', victim)
 
   gameArea.players[victim].life -= 10
 
@@ -392,6 +393,8 @@ function lostLife(state) {
   // Verificar perca do player
   if (gameArea.players[victim].life === 0) {
     gameArea.deadPlayer(victim)
+
+    console.log('player: ', shooter, ' Matou: ', victim)
   }
 }
 
@@ -400,7 +403,7 @@ function sendLostLife(id) {
 }
 
 function deadPlayer(playerID) {
-  delete gameArea.players[playerID]
+  gameArea.deletePlayer(playerID)
   
   io.sockets.emit('dead-player', playerID)
 }
