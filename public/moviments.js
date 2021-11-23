@@ -3,7 +3,7 @@ document.addEventListener('keyup', event => keysPressed(event))
 
 
 function keysPressed(event) {
-  if (socket.connected) {
+  if (socket.connected && gameArea.playing) {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.code) !== -1) {
       var keyPosition = gameArea.keys.indexOf(event.code) === -1 ? gameArea.keys.length : gameArea.keys.indexOf(event.code)
 

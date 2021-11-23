@@ -58,6 +58,7 @@ const gameArea = {
   collisionGunshot,
   updatePlayername,
   sendLostLife,
+  deadPlayer,
 }
 
 io.on('connection', (socket) => {
@@ -384,15 +385,24 @@ function lostLife(state) {
 
   console.log('player: ', shooter, 'Atirou em: ', victim)
 
-  gameArea.players[shooter].life -= 10
+  gameArea.players[victim].life -= 10
 
   gameArea.sendLostLife(victim)
 
   // Verificar perca do player
+  if (gameArea.players[victim].life === 0) {
+    gameArea.deadPlayer(victim)
+  }
 }
 
 function sendLostLife(id) {
   io.sockets.emit('receive-lost-life', id)
+}
+
+function deadPlayer(playerID) {
+  delete gameArea.players[playerID]
+  
+  io.sockets.emit('dead-player', playerID)
 }
 
 server.listen(process.env.PORT || 8081, () => console.log('Server is running!'))

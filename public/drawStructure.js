@@ -3,6 +3,7 @@ const screenElements = {
   myTank: new Image(),
   enemyTank: new Image(),
   centerObstacle: new Image(),
+  explosionSprite: new Image(),
   drawPlayers,
   drawGunshots,
   drawPlayername,
@@ -13,9 +14,7 @@ screenElements.map.src = './images/map.png'
 screenElements.myTank.src = './images/i_tank.png'
 screenElements.enemyTank.src = './images/enemy.png'
 screenElements.centerObstacle.src = './images/center_map.png'
-
-const teste = new Particle()
-
+screenElements.explosionSprite.src = './images/spriteExplosion.png'
 
 function renderScreen() {
   ctx.drawImage(screenElements.map, 0, 0)
@@ -28,8 +27,11 @@ function renderScreen() {
   ctx.drawImage(screenElements.centerObstacle, 591, 411)
   
   screenElements.drawHealthbar()
-  
-  teste.update()
+
+  // players dead
+  for (var player of gameArea.playersDead) {
+    player()
+  }
 
   requestAnimationFrame(renderScreen)
 }
@@ -97,24 +99,6 @@ function drawPlayername() {
   }
 }
 
-
-function Particle() {
-  this.x = 200
-  this.y = 200
-
-  this.update = function() {
-    this.x += 0.1
-    this.y += 0.1
-
-    for (var c=0; c < 2; c++) {
-      ctx.beginPath()
-      ctx.fillStyle = c == 1 ? "red" : 'green'
-      ctx.arc(c === 1 ? this.x : this.x-4, this.y, 10, 0, 2*Math.PI)
-      ctx.fill()  
-    }
-
-  }
-}
 
 
 renderScreen()

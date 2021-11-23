@@ -75,7 +75,18 @@ progress {
 .input-healt {
     position: absolute;
 }
+
 /* ------------ initial screen --------------- */
+.container {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background-color: white;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    border-radius: 5px;
+    transition: 1.3s;
+}
 
 .blur-screen {
     position: absolute;
@@ -89,15 +100,8 @@ progress {
 }
 
 .initial-container {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    background-color: white;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 5px;
-    z-index: 2;
 }
 
 .logo-container {
@@ -146,17 +150,15 @@ progress {
 /* ----------------------- dead screen ------------------------ */
 
 .dead-container {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    background-color: white;
     left: -150%;
     top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 5px;
-    transition: 0.5s;
-    z-index: 2;
 }
-.dead-container  img {
+
+
+.disconnected-container {
+    left: -150%;
+    top: 50%;
+}
+.disconnected-container  img {
     margin-top: 50px;
 }

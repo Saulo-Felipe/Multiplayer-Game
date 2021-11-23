@@ -6,8 +6,8 @@ function play() {
   if (input.value.length > 0) {
     socket.connect()
 
-    document.querySelector('.blur-screen').style.display = 'none'
-    document.querySelector('.initial-container').style.display = 'none'
+    gameArea.playing = true
+    editCurrentScreen('remove-all')
 
     localStorage.setItem('player_name', input.value)
   } else {

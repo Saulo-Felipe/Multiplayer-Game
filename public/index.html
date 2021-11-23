@@ -11,7 +11,7 @@
 
     <div class="blur-screen"></div>
 
-    <div class="initial-container">
+    <div class="initial-container container">
         <div class="logo-container">
             <img src="./images/logo.png"/>
         </div>
@@ -26,7 +26,7 @@
         <div class="error-msg"></div>
     </div>
 
-    <div class="dead-container">
+    <div class="disconnected-container container">
         <div class="logo-container">
             <img src="./images/disconnected.png"/>
         </div>
@@ -38,6 +38,17 @@
         </div>
     </div>
     
+    <div class="dead-container container">
+        <div class="logo-container">
+            <img src="./images/dead-screen.png"/>
+        </div>
+
+        <div class="actions-container">
+            <div class="btns-container">
+                <button class="btn btn-play" style="width: 100%;" onclick="gameArea.editCurrentScreen('dead-container')">Continuar</button>
+            </div>
+        </div>
+    </div>
     
     <div class="game-container">
         <canvas width="1500px" height="800px"></canvas>
@@ -49,9 +60,6 @@
 
     </div>
 
-    <div id="healt-progress-bar">
-        <progress value="100" max="100" class="input-healt"> 32% </progress>
-    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="./game.js"></script>

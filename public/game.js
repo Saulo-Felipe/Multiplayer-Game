@@ -44,6 +44,10 @@ socket.on('receive-lost-life', (id) => {
   gameArea.players[id].life -= 10
 })
 
+socket.on('dead-player', (playerID) => {
+  gameArea.deadPlayer(playerID)
+})
+
 // -------------------- GAME ----------------------
 
 
@@ -53,6 +57,7 @@ const ctx = canvas.getContext('2d')
 const gameArea = {
   canvasWidth: 1500,
   canvasHeight: 800,
+  playing: false,
   players: {},
   gunshots: [],
   keys: [],
@@ -82,6 +87,7 @@ const gameArea = {
     { x: 1054+11, y: 713+11, radius: 11 },
     { x: 1053+14.5, y: 491+14.5, radius: 14.5 },
   ],
+  playersDead: [],
   pushCollisionPos,
   createPlayer,
   deletePlayer,
@@ -93,6 +99,8 @@ const gameArea = {
   addGunshot,
   gunshotCollision,
   updateGunshots,
+  deadPlayer,
+  editCurrentScreen,
 }
 
 
@@ -117,8 +125,8 @@ function deletePlayer(id) {
 function disconnected() {
   console.log('[disconnected]')
 
-  document.querySelector('.blur-screen').style.display = 'block'
-  document.querySelector('.dead-container').style.left = '50%'
+  editCurrentScreen('dead-container')
+
 
   socket.disconnect()
 }
@@ -207,6 +215,8 @@ function gunshotCollision(gunshot, i) {
   
       if (distance < sumRadios) {
         gameArea.gunshots.splice(i, 1)
+
+        console.log(gunshot.id, ' atirou em ', player.id)
       }
         
     }
@@ -233,4 +243,62 @@ function gunshotCollision(gunshot, i) {
   }
 
 
+}
+
+function deadPlayer(playerID) {
+  const player = gameArea.players[playerID]
+  delete gameArea.players[playerID]
+  gameArea.playing = false
+  
+  if (player.id === socket.id)
+    editCurrentScreen('dead-container')
+
+  gameArea.playersDead.push(new Explosion(player.x, player.y, gameArea.playersDead.length))
+}
+
+function Explosion(x, y, pos) {
+  var x = x
+  var y = y
+  var frame = 0
+
+  return function update() {
+    frame += 0.15
+
+    screenElements.explosionSprite.src = `./images/explosionFrames/frame${parseInt(frame)}.png`
+
+    ctx.drawImage(screenElements.explosionSprite, 100, 100)
+
+
+    if (frame >= 8) {
+      gameArea.playersDead.splice(pos, 1)
+    }
+    
+  }
+}
+
+// Scrip Functions
+function editCurrentScreen(type) {
+
+  var allContainers = document.querySelectorAll('.container') 
+
+  if (type !== 'remove-all') {
+
+    for (var element of allContainers) {
+      if (!element.classList.contains(`${type}`))
+        element.style.left = '-150%'
+    }
+
+    document.querySelector('.blur-screen').style.display = 'block'
+    document.querySelector(`.${type}`).style.left = '50%'
+  }
+
+
+  if (type === 'remove-all') {
+    document.querySelector('.blur-screen').style.display = 'none'
+
+    for (var element of allContainers) {
+      element.style.left = '-150%'
+    }
+
+  }
 }
