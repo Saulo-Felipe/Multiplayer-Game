@@ -2,6 +2,11 @@ const socket = io({transports: ['websocket'], autoConnect: false})
 
 socket.on('connect', () => {
   console.log('Conectado com o id -> ', socket.id)
+
+  // Remove screen at window
+  gameArea.playing = true
+  editCurrentScreen('remove-all')
+  buttonLoading('remove')
 })
 
 socket.on('disconnect', (reason) => {
