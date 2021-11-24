@@ -28,6 +28,8 @@ function renderScreen() {
   
   screenElements.drawHealthbar()
 
+
+
   // players dead
   for (var player of gameArea.playersDead) {
     player()

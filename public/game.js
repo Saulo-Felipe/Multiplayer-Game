@@ -266,8 +266,7 @@ function Explosion(x, y, pos) {
   return function update() {
     frame += 0.12
 
-    screenElements.explosionSprite.src = `./images/explosionFrames/frame${parseInt(frame)}.png`
-    ctx.drawImage(screenElements.explosionSprite, x, y)
+    ctx.drawImage(screenElements.explosionSprite, 166*parseInt(frame), 0, 166, 170, x, y, 166, 170)
 
 
     if (frame >= 8) {
