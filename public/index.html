@@ -58,10 +58,17 @@
 
     <div id="ranking">
         <h2>Ranking</h2>
-        <div id="ranking-players"></div>
-
+        <div id="ranking-container">
+            
+            
+        </div>
     </div>
 
+    <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
+
+
+
+    <script src="joy.js"></script>
     <script src="https://kit.fontawesome.com/c9a35cf9ec.js" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./game.js"></script>
@@ -70,6 +77,52 @@
     <script src="./drawStructure.js"></script>
     
 
+    <script type="text/javascript">
+        // Create JoyStick object into the DIV 'joyDiv'
+        var joy = new JoyStick('joyDiv', {width: 150, height: 150});
 
+        var teste = 0
+        setInterval(() => {
+            JoyStickPos = joy.GetDir() 
+            var posPressed = []
+
+            if (JoyStickPos === 'W')
+                posPressed.push('ArrowLeft')
+            else if (JoyStickPos === 'E')
+                posPressed.push('ArrowRight')
+            else if (JoyStickPos === 'S')
+                posPressed.push('ArrowDown')
+            else if (JoyStickPos === 'N')
+                posPressed.push('ArrowUp')
+
+            else if (JoyStickPos === 'NW')
+                posPressed.push('ArrowUp', 'ArrowLeft')
+            else if (JoyStickPos === 'NE')
+                posPressed.push('ArrowUp', 'ArrowRight')
+            
+            else if (JoyStickPos === 'SW')
+                posPressed.push('ArrowDown', 'ArrowLeft')
+            else if (JoyStickPos === 'SE')
+                posPressed.push('ArrowDown', 'ArrowRight')
+
+            gameArea.keys = posPressed
+
+            /*
+                C = Null
+                W = left
+                S = Bottom
+                N = Top
+                E = Right
+
+                NW = Top and Left
+                NE = Top and Right
+                SW = Bottom and Left
+                SE = Bottom and Right
+
+            */
+        }, 20)
+
+
+    </script>
 </body>
 </html>

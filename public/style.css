@@ -37,7 +37,7 @@ progress {
 #ranking {
     width: 300px;
     min-height: 100px;
-    background: rgba(0, 0, 0, 0.369);
+    background: rgba(0, 0, 0, 0.669);
     position: fixed;
     top: 0px;
     left: 100%;
@@ -48,12 +48,28 @@ progress {
 
 #ranking > h2 {
     text-align: center;
+    font-family: cursive;
+}
+
+@media screen and (max-width: 1000px) {
+    #ranking {
+        width: 200px;
+        padding: 10px;
+        padding-bottom: 0.8em;
+    }
+    .player-ranking {
+        font-size: 1rem !important;
+    }
+
 }
 
 .player-ranking {
     display: flex;
     justify-content: space-around;
     margin-top: 20px;
+    font-family: cursive;
+    font-weight: bolder;
+    font-size: 1.4rem;
 }
 
 .no-wifi-icon {
@@ -180,4 +196,19 @@ progress {
     50% { transform: rotate(180deg); }
     75% { transform: rotate(270deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* --------------- joystick ------------------ */
+
+#joyDiv {
+    display: none;
+    position: absolute;
+    top: calc(120vh - 180px);
+    left: calc(120vw - 180px);
+}
+
+@media screen and (max-width: 1100px) {
+    #joyDiv {
+        display: block;
+    }
 }

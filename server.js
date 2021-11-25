@@ -392,9 +392,10 @@ function lostLife(state) {
 
   // Verificar perca do player
   if (gameArea.players[victim].life === 0) {
-    gameArea.deadPlayer(victim)
+    gameArea.deadPlayer(victim, shooter)
 
-    console.log('player: ', shooter, ' Matou: ', victim)
+    gameArea.players[shooter].kills += 1
+    console.log("Atualizei: ", gameArea.players)
   }
 }
 
@@ -402,10 +403,10 @@ function sendLostLife(id) {
   io.sockets.emit('receive-lost-life', id)
 }
 
-function deadPlayer(playerID) {
-  gameArea.deletePlayer(playerID)
+function deadPlayer(victimID, shooterID) {
+  gameArea.deletePlayer(victimID)
   
-  io.sockets.emit('dead-player', playerID)
+  io.sockets.emit('dead-player', {victimID, shooterID})
 }
 
 server.listen(process.env.PORT || 8081, () => console.log('Server is running!'))

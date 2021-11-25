@@ -27,10 +27,14 @@ socket.on('initial-state', (state, callback) => {
     playerID: gameArea.players[socket.id].id, 
     name: gameArea.players[socket.id].name 
   })
+
+  gameArea.updateRanking()
 })
 
 socket.on('player-name', (state) => {
   gameArea.players[state.playerID].name = state.name
+
+  gameArea.updateRanking()
 })
 
 socket.on('add-player', (player) => {
@@ -51,6 +55,8 @@ socket.on('receive-lost-life', (id) => {
 
 socket.on('dead-player', (playerID) => {
   gameArea.deadPlayer(playerID)
+
+  gameArea.updateRanking()
 })
 
 // -------------------- GAME ----------------------
@@ -106,6 +112,7 @@ const gameArea = {
   updateGunshots,
   deadPlayer,
   editCurrentScreen,
+  updateRanking,
 }
 
 
@@ -145,7 +152,6 @@ function movePlayer(key) {
 
 function receiveMoviment(newMoviment) {
   // console.log('\n[Receive Moviment] --> ', newMoviment)
-
   Object.assign(gameArea.players[newMoviment.id], newMoviment)  
 }
 
@@ -248,16 +254,20 @@ function gunshotCollision(gunshot, i) {
 
 }
 
-function deadPlayer(playerID) {
-  const player = gameArea.players[playerID]
-  delete gameArea.players[playerID]
+function deadPlayer({victimID, shooterID}) {
+  const player = gameArea.players[victimID]
   
+  // add +1 kill
+  gameArea.players[shooterID].kills += 1
+
   if (player.id === socket.id) {
     editCurrentScreen('dead-container')
     gameArea.playing = false
   }
 
   gameArea.playersDead.push(new Explosion(player.x-75, player.y-75, gameArea.playersDead.length))
+
+  delete gameArea.players[victimID]
 }
 
 function Explosion(x, y, pos) {
@@ -274,6 +284,37 @@ function Explosion(x, y, pos) {
     }
     
   }
+}
+
+function updateRanking() {
+  var rankingArray = []
+  console.log("Atualizando ranking: ", gameArea.players)
+  for (var i in gameArea.players) {
+    const player = gameArea.players[i]
+    rankingArray.push({name: player.name, id: player.id, kills: player.kills})
+  }
+
+  rankingArray.sort((a, b) => a.kills < b.kills ? -1 : (a.kills > b.kills ? 1 : 0))
+  rankingArray.reverse()
+
+  var rankingContainer = document.getElementById('ranking-container')
+  rankingContainer.innerHTML = ''
+
+  for (var i in rankingArray) {
+    const player = rankingArray[i]
+
+    rankingContainer.innerHTML += `
+    <div class="player-ranking">
+      <div>
+        <span>${i+1}.</span>
+        <span>${player.name}</span>
+      </div>
+
+      <span>${player.kills} ☠</span>
+    </div>
+    `
+  }
+
 }
 
 // Scrip Functions
@@ -306,3 +347,4 @@ function editCurrentScreen(type) {
 
   }
 }
+
