@@ -40,7 +40,16 @@ function pageLoad() {
     document.querySelector('input').value = playerName  
   }
   if (window.matchMedia("(max-width: 1000px)").matches) {
-    document.querySelector('html').webkitRequestFullScreen()
+    var elem = document.querySelector('body');
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    }
   }
 }
 
