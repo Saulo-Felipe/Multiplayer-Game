@@ -39,6 +39,9 @@ function pageLoad() {
   if (playerName !== null) {
     document.querySelector('input').value = playerName  
   }
+  if (window.matchMedia("(max-width: 1000px)").matches) {
+    document.querySelector('html').webkitRequestFullScreen()
+  }
 }
 
 
