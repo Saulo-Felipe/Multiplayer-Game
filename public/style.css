@@ -200,15 +200,39 @@ progress {
 
 /* --------------- joystick ------------------ */
 
-#joyDiv {
-    display: none;
+#joy-rotate {
     position: absolute;
-    top: calc(120vh - 180px);
-    left: calc(120vw - 180px);
+    top: calc(120vh - (3.5rem * 3));
+    left: calc(115vw - (3.5rem * 2));
+    border: solid 1px red;
+    display: flex;
+}
+#joy-move {
+    position: absolute;
+    top: calc(120vh - (3.5rem * 2));
+    left: 3.5rem;
+    border: solid 1px red;
+}
+#mobile-gunshot {
+    align-self: center;
+    margin-right: 10px;
 }
 
-@media screen and (max-width: 1100px) {
-    #joyDiv {
-        display: block;
-    }
+.btn-joy {
+    margin: 0;
+    color: #15aabf;
+    font-size: 3.5rem;
+    width:max-content;
+    /* background-color: transparent; */
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    padding: 0;
 }
+
+/* ---------------- all classes --------------------- */
+
+.mt { margin-top: 20px; }
+.mb { margin-bottom: 20px; }
+.ml { margin-left: 20px; }
+.mr { margin-right: 20px; }

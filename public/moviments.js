@@ -18,6 +18,24 @@ function keysPressed(event) {
   }
 }
 
+function movePlayerMobile(moviment, type) {
+  if (type !== 'cancel') {
+    var keyPosition = gameArea.keys.indexOf(moviment) === -1 ? gameArea.keys.length : gameArea.keys.indexOf(event.code)
+
+    gameArea.keys[keyPosition] = moviment
+    
+  } else {
+    for (var i in gameArea.keys)
+    var mov = gameArea.keys[i]
+
+    if (mov === moviment) {
+      gameArea.keys.splice(i, 1)
+    }
+  }
+
+  console.log("Chamando")
+}
+
 setInterval(() => {
   for (var key of gameArea.keys) {
     gameArea.movePlayer(key)
