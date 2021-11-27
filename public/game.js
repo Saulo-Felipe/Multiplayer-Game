@@ -306,7 +306,7 @@ function updateRanking() {
     rankingContainer.innerHTML += `
     <div class="player-ranking">
       <div>
-        <span>${i+1}.</span>
+        <span>${Number(i)+1}.</span>
         <span>${player.name}</span>
       </div>
 

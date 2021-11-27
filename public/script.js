@@ -19,15 +19,32 @@ async function play() {
   }
 }
 
+function getTranslateXY(element) {
+  const style = window.getComputedStyle(element)
+  const matrix = new DOMMatrixReadOnly(style.transform)
+  return {
+    translateX: matrix.m41,
+    translateY: matrix.m42
+  }
+}
+
 function mobileScreen() {
-  const player = gameArea.players[socket.id]
+  var player = gameArea.players[socket.id]
 
   const container = document.querySelector('.game-container > canvas')
 
-  const screenWdith = screen.width/2+25
-  const screenHeight = screen.height/2+25
+  const screenWdith = (screen.width/2) - player.x
+  const screenHeight = (screen.height/2) - player.y
 
-  container.style.transform = `translate(${screenWdith-player.x}px, ${screenHeight-player.y}px)`
+  console.clear()
+  console.log(screenWdith, screenHeight)
+  
+  if (screenWdith < 78 && screenWdith > -811)
+    container.style.transform = `translate(${screenWdith}px, ${getTranslateXY(canvas).translateY}px) scale(0.7)`
+  
+  if (screenHeight < -20 && screenHeight > -394)
+    container.style.transform = `translate(${getTranslateXY(canvas).translateX}px, ${screenHeight}px) scale(0.7)`
+
 
 }
 
