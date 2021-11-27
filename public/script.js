@@ -19,7 +19,7 @@ async function play() {
   }
 }
 
-function mobileScreen(key) {
+function mobileScreen() {
   const player = gameArea.players[socket.id]
 
   const container = document.querySelector('.game-container > canvas')
@@ -27,11 +27,8 @@ function mobileScreen(key) {
   const screenWdith = screen.width/2+25
   const screenHeight = screen.height/2+25
 
+  container.style.transform = `translate(${screenWdith-player.x}px, ${screenHeight-player.y}px)`
 
-  if (key !== 'ArrowLeft' && key !== 'ArrowRight') { 
-    // container.scrollTo(player.x-screenWdith, player.y-screenHeight)
-    container.style.transform = `translate(${screenWdith-player.x}px, ${screenHeight-player.y}px)`
-  }
 }
 
 function pageLoad() {
@@ -40,16 +37,7 @@ function pageLoad() {
     document.querySelector('input').value = playerName  
   }
   if (window.matchMedia("(max-width: 1000px)").matches) {
-    var elem = document.querySelector('body');
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
-    }
+    
   }
 }
 

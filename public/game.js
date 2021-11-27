@@ -151,7 +151,7 @@ function movePlayer(key) {
 }
 
 function receiveMoviment(newMoviment) {
-  // console.log('\n[Receive Moviment] --> ', newMoviment)
+  // console.log('\n[Receive Moviment] --> ', newMoviment)    
   Object.assign(gameArea.players[newMoviment.id], newMoviment)  
 }
 

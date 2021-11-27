@@ -1,3 +1,6 @@
+* {
+    overflow: hidden;
+}
 html, body {
     margin: 0;
     width: max-content;
@@ -5,7 +8,6 @@ html, body {
 }
 
 body {
-    overflow: hidden;
     background-color: #857d4d;
 }
 
@@ -17,14 +19,10 @@ body {
 
 @media screen and (max-width: 1000px) {
     .game-container {
-        height: 120vh;
-        width: 120vw;
+        height: 100vh;
+        width: 100vw;
         border: solid 1px red;
-        overflow: hidden;
         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    }
-    .body {
-        overflow: hidden;
     }
 }
 
@@ -109,7 +107,7 @@ progress {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 120vh;
+    height: 100vh;
     background-image: url('./images/background-blur.jpeg');
     opacity: 0.7;
     z-index: 1;
@@ -162,6 +160,20 @@ progress {
     margin-top: 15px; 
 }
 
+@media screen and (max-width: 1000px) {
+    .container {
+        height: 80vh !important;
+        left: calc(60vw - 250px);
+        top: calc(60vh - 40vh);
+        transform: none;
+    }
+    .logo-container img{
+        height: 40vh;
+    }
+    .blur-screen {
+        width: 100vw;
+    }
+}
 
 /* ----------------------- dead screen ------------------------ */
 
@@ -200,35 +212,45 @@ progress {
 
 /* --------------- joystick ------------------ */
 
-#joy-rotate {
-    position: absolute;
-    top: calc(120vh - (3.5rem * 3));
-    left: calc(115vw - (3.5rem * 2));
+.joy-container {
     border: solid 1px red;
+    position: absolute;
+    top: 100%;
+}
+#joy-rotate {
+    left: 100%;
+    transform: translate(-100%, -100%);
+    width: max-content;
+    height: max-content;
     display: flex;
 }
+#joy-rotate div {
+    width: inherit;
+}
+
 #joy-move {
-    position: absolute;
-    top: calc(120vh - (3.5rem * 2));
-    left: 3.5rem;
-    border: solid 1px red;
+    transform: translateY(-100%);
+}
+.btn-joy {
+    padding: 0;
+    margin: 0;
+    width: 60px;
+    height: 60px;
+    box-sizing: border-box;
+    font-size: xxx-large;
+    text-align: center;
+    line-height: 10px;
+    color: steelblue;
+    margin: 10px;
 }
 #mobile-gunshot {
     align-self: center;
-    margin-right: 10px;
+}
+#mobile-move {
+    display: flex;
+    flex-flow: column;
 }
 
-.btn-joy {
-    margin: 0;
-    color: #15aabf;
-    font-size: 3.5rem;
-    width:max-content;
-    /* background-color: transparent; */
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 50%;
-    padding: 0;
-}
 
 /* ---------------- all classes --------------------- */
 

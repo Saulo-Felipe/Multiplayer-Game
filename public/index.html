@@ -8,81 +8,79 @@
     <link rel="stylesheet" href="./style.css"/>
 </head>
 <body>
+    <div id="game">
+        <div class="blur-screen"></div>
 
-    <div class="blur-screen"></div>
-
-    <div class="initial-container container">
-        <div class="logo-container">
-            <img src="./images/logo.png"/>
-        </div>
-        <div class="actions-container">
-            <input type="text" placeholder="Nome de jogador" minlength="1"/> 
-            <div class="btns-container">
-                <button class="btn btn-play" onclick="play()">
-                    Jogar 
-                </button>
-                <button class="btn btn-spectate">Assistir</button>
+        <div class="initial-container container">
+            <div class="logo-container">
+                <img src="./images/logo.png"/>
             </div>
-        </div>
-
-        <div class="error-msg"></div>
-    </div>
-
-    <div class="disconnected-container container">
-        <div class="logo-container">
-            <img src="./images/disconnected.png"/>
-        </div>
-
-        <div class="actions-container">
-            <div class="btns-container">
-                <button class="btn btn-play" style="width: 100%;" onclick="window.location.reload()">Reconectar</button>
+            <div class="actions-container">
+                <input type="text" placeholder="Nome de jogador" minlength="1"/> 
+                <div class="btns-container">
+                    <button class="btn btn-play" onclick="play()">
+                        Jogar 
+                    </button>
+                    <button class="btn btn-spectate">Assistir</button>
+                </div>
             </div>
-        </div>
-    </div>
     
-    <div class="dead-container container">
-        <div class="logo-container">
-            <img src="./images/dead-screen.png"/>
+            <div class="error-msg"></div>
         </div>
-
-        <div class="actions-container">
-            <div class="btns-container">
-                <button class="btn btn-play" style="width: 100%;" onclick="gameArea.editCurrentScreen('initial-container')">Continuar</button>
-            </div>
-        </div>
-    </div>
     
-    <div class="game-container">
-        <canvas width="1500px" height="800px"></canvas>
-    </div>
-
-    <div id="ranking">
-        <h2>Ranking</h2>
-        <div id="ranking-container">
-            
-            
-        </div>
-    </div>
-
-    <div id="joyStick">
-        <div id="joy-rotate">
-            <div id="mobile-gunshot">
-                <button class="btn btn-joy"><i class="fas fa-times-circle"></i></button>
+        <div class="disconnected-container container">
+            <div class="logo-container">
+                <img src="./images/disconnected.png"/>
             </div>
-            <div>
-                <button ontouchstart="movePlayerMobile('ArrowUp', 'move')" ontouchend="movePlayerMobile('ArrowUp', 'cancel')" class="btn btn-joy mb"><i class="fas fa-arrow-circle-up"></i></button>
-                <button ontouchstart="movePlayerMobile('ArrowDown', 'move')" ontouchend="movePlayerMobile('ArrowDown', 'cancel')" class="btn btn-joy"><i class="fas fa-arrow-circle-down"></i></button>    
+    
+            <div class="actions-container">
+                <div class="btns-container">
+                    <button class="btn btn-play" style="width: 100%;" onclick="window.location.reload()">Reconectar</button>
+                </div>
             </div>
         </div>
-
-        <div id="joy-move">
-            <div>
-                <button ontouchstart="movePlayerMobile('ArrowLeft', 'move')" ontouchend="movePlayerMobile('ArrowLeft', 'cancel')" class="btn btn-joy mr"><i class="fas fa-arrow-circle-left"></i></button>
-                <button ontouchstart="movePlayerMobile('ArrowRight', 'move')" ontouchend="movePlayerMobile('ArrowRight', 'cancel')"  class="btn btn-joy"><i class="fas fa-arrow-circle-right"></i></button>    
+        
+        <div class="dead-container container">
+            <div class="logo-container">
+                <img src="./images/dead-screen.png"/>
+            </div>
+    
+            <div class="actions-container">
+                <div class="btns-container">
+                    <button class="btn btn-play" style="width: 100%;" onclick="gameArea.editCurrentScreen('initial-container')">Continuar</button>
+                </div>
             </div>
         </div>
+        
+        <div class="game-container">
+            <canvas width="1500px" height="800px"></canvas>
+        </div>
+    
+        <div id="ranking">
+            <h2>Ranking</h2>
+            <div id="ranking-container">
+                
+                
+            </div>
+        </div>
+    
+        <div id="joyStick">
+            <div id="joy-rotate" class="joy-container">
+                <div id="mobile-gunshot">
+                    <button class="btn btn-joy"><i class="fas fa-fire-alt"></i></button>
+                </div>
+                <div id="mobile-move">
+                    <button class="ArrowUp btn btn-joy"><i class="ArrowUp fas fa-arrow-alt-circle-up"></i></button>
+                    <button class="ArrowDown btn btn-joy"><i class="ArrowDown fas fa-arrow-alt-circle-down"></i></button>    
+                </div>
+            </div>
+    
+            <div id="joy-move" class="joy-container">
+                <button class="ArrowLeft btn btn-joy"><i class="ArrowLeft fas fa-arrow-alt-circle-left"></i></button>
+                <button class="ArrowRight btn btn-joy"><i class="ArrowRight fas fa-arrow-alt-circle-right"></i></button>    
+            </div>
+        </div>    
     </div>
-
 
     <script src="https://kit.fontawesome.com/c9a35cf9ec.js" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>

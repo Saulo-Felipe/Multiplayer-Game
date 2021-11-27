@@ -1,6 +1,10 @@
 document.addEventListener('keydown', event => keysPressed(event))
 document.addEventListener('keyup', event => keysPressed(event))
 
+document.querySelector('body').addEventListener('touchstart', (event) => movePlayerMobile(event, true))
+document.querySelector('body').addEventListener('touchend', (event) => movePlayerMobile(event, false))
+document.querySelector('body').addEventListener('touchcancel', (event) => movePlayerMobile(event, false))
+
 
 function keysPressed(event) {
   if (socket.connected && gameArea.playing) {
@@ -18,28 +22,32 @@ function keysPressed(event) {
   }
 }
 
-function movePlayerMobile(moviment, type) {
-  if (type !== 'cancel') {
-    var keyPosition = gameArea.keys.indexOf(moviment) === -1 ? gameArea.keys.length : gameArea.keys.indexOf(event.code)
+function movePlayerMobile(event, touch) {
+  var touchLength = event.touches.length
+  var keyPressed = event.target.classList[0]
+  
+  if (keyPressed === 'ArrowUp' || keyPressed === 'ArrowDown' || keyPressed === 'ArrowLeft' || keyPressed === 'ArrowRight') {
+    if (touchLength > 0) {
+      var hasInList = gameArea.keys.indexOf(keyPressed)
 
-    gameArea.keys[keyPosition] = moviment
-    
-  } else {
-    for (var i in gameArea.keys)
-    var mov = gameArea.keys[i]
+      if (touch) {
+        if (hasInList === -1)
+          gameArea.keys.push(keyPressed)
 
-    if (mov === moviment) {
-      gameArea.keys.splice(i, 1)
+      } else {
+        gameArea.keys.splice(hasInList, 1)
+      }
+  
+    } else {
+      gameArea.keys = []
     }
   }
-
-  console.log("Chamando")
 }
 
 setInterval(() => {
   for (var key of gameArea.keys) {
     gameArea.movePlayer(key)
-
-    mobileScreen(key)
+    
+    mobileScreen()
   }
 }, 20);
