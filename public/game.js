@@ -325,6 +325,7 @@ function editCurrentScreen(type) {
   var allContainers = document.querySelectorAll('.container') 
 
   if (type !== 'remove-all') {
+    var isMobile = window.matchMedia("(max-width: 1000px)").matches ? true : false
 
     for (var element of allContainers) {
       if (!element.classList.contains(`${type}`))
@@ -336,7 +337,7 @@ function editCurrentScreen(type) {
 
 
     document.querySelector('.blur-screen').style.display = 'block'
-    document.querySelector(`.${type}`).style.left = 'calc(50vw - 250px)'
+    document.querySelector(`.${type}`).style.left = `${isMobile ? 'calc(50vw - 250px)' : '50%'}`
   }
 
 
