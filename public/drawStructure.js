@@ -27,22 +27,8 @@ function renderScreen() {
   ctx.drawImage(screenElements.centerObstacle, 591, 411)
   
   screenElements.drawHealthbar()
-  var player = gameArea.players[socket.id]
-  
-  if (player) {
-    var x = screen.height/2 - player.x
-    var y = screen.width/2 - player.y
 
-    ctx.moveTo(0,x)
-    ctx.lineTo(1000,x);
-    ctx.stroke();  
-
-    ctx.moveTo(y, 0);
-    ctx.lineTo(y, 1000);
-    ctx.stroke();  
-  }
-
-  // players dead
+  // players dead animation
   for (var player of gameArea.playersDead) {
     player()
   }

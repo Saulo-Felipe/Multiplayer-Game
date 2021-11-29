@@ -11,6 +11,10 @@
     <div id="game">
         <div class="blur-screen"></div>
 
+        <div class="fullScreen">
+            <i class="fas fa-expand"></i>
+        </div>
+
         <div class="initial-container container">
             <div class="logo-container">
                 <img src="./images/logo.png"/>
@@ -67,7 +71,7 @@
         <div id="joyStick">
             <div id="joy-rotate" class="joy-container">
                 <div id="mobile-gunshot">
-                    <button onclick="gameArea.newGunshot()" class="btn btn-joy"><i class="fas fa-fire-alt"></i></button>
+                    <button ontouchstart="gameArea.newGunshot()" class="btn btn-joy"><i class="fas fa-fire-alt"></i></button>
                 </div>
                 <div id="mobile-move">
                     <button class="ArrowUp btn btn-joy"><i class="ArrowUp fas fa-arrow-alt-circle-up"></i></button>

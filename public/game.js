@@ -29,6 +29,8 @@ socket.on('initial-state', (state, callback) => {
   })
 
   gameArea.updateRanking()
+  screenMoviment()
+
 })
 
 socket.on('player-name', (state) => {
@@ -334,7 +336,7 @@ function editCurrentScreen(type) {
 
 
     document.querySelector('.blur-screen').style.display = 'block'
-    document.querySelector(`.${type}`).style.left = '50%'
+    document.querySelector(`.${type}`).style.left = 'calc(50vw - 250px)'
   }
 
 

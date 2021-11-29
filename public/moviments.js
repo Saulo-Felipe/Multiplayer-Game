@@ -48,6 +48,6 @@ setInterval(() => {
   for (var key of gameArea.keys) {
     gameArea.movePlayer(key)
     
-    mobileScreen()
+    screenMoviment()
   }
 }, 20);

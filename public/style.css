@@ -15,12 +15,14 @@ body {
     width: max-content;
     border: solid 3px rgba(160, 126, 126, 0.386);
 }
+canvas {
+    position: fixed;
+}
 
 @media screen and (max-width: 1000px) {
     .game-container {
         height: 100vh;
         width: 100vw;
-        border: solid 1px red;
         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     }
 }
@@ -32,41 +34,49 @@ progress {
 }
 
 #ranking {
-    width: 300px;
+    width: 200px;
     min-height: 100px;
-    background: rgba(0, 0, 0, 0.669);
+    background: rgba(0, 0, 0, 0.469);
     position: fixed;
     top: 0px;
     left: 100%;
     transform: translateX(-100%);
     color: white;
     padding: 20px;
+    max-height: 50vh;
+    overflow-y: scroll;
 }
+
 
 #ranking > h2 {
     text-align: center;
-    font-family: cursive;
+    font-family: monospace;
+    margin: 0;
+    margin-bottom: 20px;
 }
 
 @media screen and (max-width: 1000px) {
     #ranking {
-        width: 200px;
+        width: 150px;
         padding: 10px;
         padding-bottom: 0.8em;
     }
+    #ranking > h2 {
+        font-size: 0.9rem;
+    }
     .player-ranking {
-        font-size: 1rem !important;
+        font-size: 0.8rem !important;
     }
 
 }
 
 .player-ranking {
     display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-    font-family: cursive;
+    justify-content: space-between;
+    margin-top: 15px;
+    font-family: monospace;
     font-weight: bolder;
-    font-size: 1.4rem;
+    font-size: 1rem;
 }
 
 .no-wifi-icon {
@@ -89,6 +99,17 @@ progress {
     position: absolute;
 }
 
+.fullScreen {
+    position: fixed;
+    font-size: 1.9rem;
+    top: 10px;
+    left: 10px;
+    z-index: 99;
+}
+
+.fa-fire-alt {
+    color: red !important;
+}
 /* ------------ initial screen --------------- */
 .container {
     position: absolute;
@@ -107,9 +128,9 @@ progress {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-image: url('./images/background-blur.jpeg');
-    opacity: 0.7;
+    background-color: rgb(0, 0, 0, 0.7);
     z-index: 1;
+    filter: blur(20px);
 }
 
 .initial-container {
@@ -162,15 +183,21 @@ progress {
 @media screen and (max-width: 1000px) {
     .container {
         height: 80vh !important;
-        left: calc(60vw - 250px);
-        top: calc(60vh - 40vh);
-        transform: none;
+        left: calc(50vw - 250px);
+        top: calc(50vh - 40vh) !important;
+        transform: none !important;
     }
     .logo-container img{
-        height: 40vh;
+        height: 40vh !important;
+    }
+    .logo-container{
+        margin-bottom: 0 !important;
     }
     .blur-screen {
-        width: 100vw;
+        width: 100vw !important;
+    }
+    .disconnected-container > .logo-container {
+        margin-top: 0;
     }
 }
 
@@ -210,14 +237,15 @@ progress {
 }
 
 /* --------------- joystick ------------------ */
-
+#joyStick {
+    display: none;
+}
 .joy-container {
-    border: solid 1px red;
     position: absolute;
-    top: 100%;
+    top: 95%;
 }
 #joy-rotate {
-    left: 100%;
+    left: 96%;
     transform: translate(-100%, -100%);
     width: max-content;
     height: max-content;
@@ -229,6 +257,7 @@ progress {
 
 #joy-move {
     transform: translateY(-100%);
+    left: 4%;
 }
 .btn-joy {
     padding: 0;
@@ -241,6 +270,7 @@ progress {
     line-height: 10px;
     color: steelblue;
     margin: 10px;
+    opacity: 0.7;
 }
 #mobile-gunshot {
     align-self: center;
@@ -250,6 +280,11 @@ progress {
     flex-flow: column;
 }
 
+@media screen and (max-width: 1000px) {
+    #joyStick {
+        display: block;
+    }
+}
 
 /* ---------------- all classes --------------------- */
 

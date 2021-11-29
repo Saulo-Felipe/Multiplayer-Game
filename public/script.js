@@ -1,6 +1,7 @@
 window.addEventListener('load', () => pageLoad())
+document.querySelector('.fullScreen').addEventListener('click', () => fullScreen())
 
-async function play() {
+function play() {
   var input = document.querySelector('input')
 
   if (input.value.length > 0) {
@@ -28,33 +29,32 @@ function getTranslateXY(element) {
   }
 }
 
-function mobileScreen() {
+function screenMoviment() {
+  console.log("refresh screen")
   var player = gameArea.players[socket.id]
 
-  const container = document.querySelector('.game-container > canvas')
+  const screenX = (screen.width/2) - player.x
+  const screenY = (screen.height/2) - player.y
 
-  const screenWdith = (screen.width/2) - player.x
-  const screenHeight = (screen.height/2) - player.y
+  var isMobile = window.matchMedia("(max-width: 1000px)").matches ? true : false
 
-  console.clear()
-  console.log(screenWdith, screenHeight)
-  
-  if (screenWdith < 78 && screenWdith > -811)
-    container.style.transform = `translate(${screenWdith}px, ${getTranslateXY(canvas).translateY}px) scale(0.7)`
-  
-  if (screenHeight < -20 && screenHeight > -394)
-    container.style.transform = `translate(${getTranslateXY(canvas).translateX}px, ${screenHeight}px) scale(0.7)`
+  if (isMobile) {
 
+    if (player.y > 245 && player.y < 600)
+      canvas.style.transform = `translate(${getTranslateXY(canvas).translateX}px, ${screenY}px) scale(0.7)`
 
+    if (player.x > 279 && player.x < 1197)
+      canvas.style.transform = `translate(${screenX}px, ${getTranslateXY(canvas).translateY}px) scale(0.7)`
+
+  } 
+  else 
+    canvas.style.transform = `translate(${screenX}px, ${screenY}px)`
 }
 
 function pageLoad() {
   var playerName = localStorage.getItem('player_name')
   if (playerName !== null) {
     document.querySelector('input').value = playerName  
-  }
-  if (window.matchMedia("(max-width: 1000px)").matches) {
-    
   }
 }
 
@@ -71,5 +71,47 @@ function buttonLoading(type) {
     btn.removeAttribute('disabled')
   }
 
+}
 
+function fullScreen() {
+  var element = document.querySelector('.fullScreen > i')
+
+  if (element.classList.contains('fa-expand')) {
+    element.classList.remove('fa-expand')
+    element.classList.add('fa-compress')
+  } else {
+    element.classList.remove('fa-compress')
+    element.classList.add('fa-expand')
+  }
+
+  toggleFullscreen()
+}
+
+function toggleFullscreen() {
+  var isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
+    (document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
+    (document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
+    (document.msFullscreenElement && document.msFullscreenElement !== null);
+
+  var docElm = document.querySelector('html');
+  if (!isInFullScreen) {
+    if (docElm.webkitRequestFullScreen)
+      docElm.webkitRequestFullScreen()
+    else if (docElm.requestFullscreen)
+      docElm.requestFullscreen()
+    else if (docElm.mozRequestFullScreen)
+      docElm.mozRequestFullScreen()
+    else if (docElm.msRequestFullscreen)
+      docElm.msRequestFullscreen()
+    
+  } else {
+    if (document.exitFullscreen)
+      document.exitFullscreen()
+    else if (document.webkitExitFullscreen)
+      document.webkitExitFullscreen()
+    else if (document.mozCancelFullScreen)
+      document.mozCancelFullScreen()
+    else if (document.msExitFullscreen)
+      document.msExitFullscreen()
+  }
 }
