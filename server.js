@@ -145,11 +145,7 @@ function createPlayer(id) {
 }
 
 function deletePlayer(id) {
-  console.log("Deletando")
-
   delete gameArea.players[id]
-
-  console.log("\nLista Atualizada")
 }
 
 function movePlayer(newMoviment) {
@@ -395,7 +391,6 @@ function lostLife(state) {
     gameArea.deadPlayer(victim, shooter)
 
     gameArea.players[shooter].kills += 1
-    console.log("Atualizei: ", gameArea.players)
   }
 }
 
