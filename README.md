@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="github/logo.png" width=45%>
+    <img src="public/images/logo.png" width=45%>
 </p>
 
 ------------------------------------
@@ -12,12 +12,12 @@
 * [Tecnologias](#tecnologias)
 * [Autor](#autor)
 * [Licença](#licenca)
-* <a href="https://multiplayer-game-saulo.herokuapp.com/" target="_blank"> 🏪 E-commerce com React e Nodejs ---- Concluído ✅ ----</a>
+* <a href="https://multiplayer-game-saulo.herokuapp.com/" target="_blank"> 🏪 Multiplayer game com Nodejs ---- Concluído ✅ ----</a>
 
 ------------------------------------
 
 ## 💻 Sobre <a id="sobre"></a>
-E-commerce construído inteiramente com ReactJS e NodeJS. Este projeto possui um layout totalmente responsivo e dinâmico. 
+Jogo de batalha de tanks multiplayer.
 <br>
 
 ------------------------------------
@@ -25,27 +25,19 @@ E-commerce construído inteiramente com ReactJS e NodeJS. Este projeto possui um
 ## ⚙️ Funcionalidades <a id="funcionalidades"></a>
 1. ✅ Responsividade
 2. ✅ Dinâmico
-3. ✅ Dashboard para administradores
-4. ✅ suporta qualquer tipo de produto para venda
-5. ✅ Todas as funcionalidades básica que um ecommerce possui
+3. ✅ Multiplayer
+4. ✅ Ranking
 
 ------------------------------------
 
 ## 🎨 Layout <a id="layout"></a>
 
-<a href="https://multiplayer-game-saulo.herokuapp.com/"><img src="https://img.shields.io/badge/Site-E--commerce-blue"/></a>
+<a href="https://multiplayer-game-saulo.herokuapp.com/"><img src="https://img.shields.io/badge/Multiplayer Game-blue"/></a>
 <img src="https://img.shields.io/badge/Backend-NodeJs-green">
-<img src="https://img.shields.io/badge/Frontend-ReactJS-green">
-<p>*O Layout completo do site está disponível <a href="https://multiplayer-game-saulo.herokuapp.com/">aqui</a>.</p>
+<p>*O Layout completo do game está disponível <a href="https://multiplayer-game-saulo.herokuapp.com/">aqui</a>.</p>
 
-<img src="github/layout_08.png">
-<img src="github/layout_07.png">
-<img src="github/layout_06.png">
-<img src="github/layout_05.png">
-<img src="github/layout_04.png">
-<img src="github/layout_03.png">
-<img src="github/layout_02.png">
-<img src="github/layout_01.png">
+<img src="screen2.jpeg">
+<img src="screen1.jpeg">
 
 ------------------------------------
 
