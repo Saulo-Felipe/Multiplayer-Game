@@ -40,7 +40,7 @@ Jogo de batalha de tanks multiplayer.
 
 <a href="https://multiplayer-game-saulo.herokuapp.com/"><img src="https://img.shields.io/badge/Multiplayer Game-blue"/></a>
 <img src="https://img.shields.io/badge/Backend-NodeJs-green">
-<p>*O Layout completo do game está disponível <a href="https://multiplayer-game-saulo.herokuapp.com/">aqui</a>.</p>
+<p>*O Layout completo do game está disponível <a href="https://multiplayer-game.onrender.com">aqui</a>.</p>
 
 <img src="screen2.jpeg">
 <img src="screen1.jpeg">
