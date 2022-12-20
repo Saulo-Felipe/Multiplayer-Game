@@ -12,13 +12,19 @@
 * [Tecnologias](#tecnologias)
 * [Autor](#autor)
 * [Licença](#licenca)
-* <a href="https://multiplayer-game-saulo.herokuapp.com/" target="_blank"> 🏪 Multiplayer game com Nodejs ---- Concluído ✅ ----</a>
+* [Preview](#preview)
 
 ------------------------------------
 
 ## 💻 Sobre <a id="sobre"></a>
 Jogo de batalha de tanks multiplayer.
 <br>
+
+------------------------------------
+
+## 🚀 Preview <a id="preview"></a>
+
+-> https://multiplayer-game.onrender.com
 
 ------------------------------------
 
