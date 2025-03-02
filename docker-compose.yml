@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  redesocial:
+    build:
+      context: .
+      network: host
+    ports:
+      - 3004:3004
+    network_mode: host
