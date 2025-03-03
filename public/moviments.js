@@ -8,12 +8,12 @@ document.querySelector('body').addEventListener('touchcancel', (event) => movePl
 
 function keysPressed(event) {
   if (socket.connected && gameArea.playing) {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.code) !== -1) {
+    if (['ArrowUp', "KeyW", 'ArrowDown', "KeyS", 'ArrowLeft', "KeyA", 'ArrowRight', "KeyD"].indexOf(event.code) !== -1) {
       var keyPosition = gameArea.keys.indexOf(event.code) === -1 ? gameArea.keys.length : gameArea.keys.indexOf(event.code)
 
       if (event.type === 'keydown')
         gameArea.keys[keyPosition] = event.code
-      else 
+      else
         gameArea.keys.splice(keyPosition, 1)
 
     } else if (event.code === 'Space' && event.type === 'keydown') {
@@ -25,7 +25,7 @@ function keysPressed(event) {
 function movePlayerMobile(event, touch) {
   var touchLength = event.touches.length
   var keyPressed = event.target.classList[0]
-  
+
   if (keyPressed === 'ArrowUp' || keyPressed === 'ArrowDown' || keyPressed === 'ArrowLeft' || keyPressed === 'ArrowRight') {
     if (touchLength > 0) {
       var hasInList = gameArea.keys.indexOf(keyPressed)
@@ -37,7 +37,7 @@ function movePlayerMobile(event, touch) {
       } else {
         gameArea.keys.splice(hasInList, 1)
       }
-  
+
     } else {
       gameArea.keys = []
     }
@@ -47,7 +47,7 @@ function movePlayerMobile(event, touch) {
 setInterval(() => {
   for (var key of gameArea.keys) {
     gameArea.movePlayer(key)
-    
+
     screenMoviment()
   }
 }, 20);

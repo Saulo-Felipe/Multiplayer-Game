@@ -156,17 +156,25 @@ function movePlayer(newMoviment) {
 
   switch (newMoviment.type) {
     case 'ArrowUp':
+    case 'KeyW':
       currentPlayer.speed = 5
       break;
+
     case 'ArrowDown':
+    case 'KeyS':
       currentPlayer.speed = -5
       break;
+
     case 'ArrowRight':
+    case 'KeyD':
       currentPlayer.directionAngle = 5
       break;
+
     case 'ArrowLeft':
+    case 'KeyA':
       currentPlayer.directionAngle = -5
       break;
+
     default:
       break;
   }

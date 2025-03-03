@@ -1,11 +1,14 @@
 * {
     overflow: hidden;
 }
-html, body {
+
+html,
+body {
     margin: 0;
     width: max-content;
     scroll-behavior: smooth;
 }
+
 body {
     background-color: #857d4d;
 }
@@ -15,6 +18,7 @@ body {
     width: max-content;
     border: solid 3px rgba(160, 126, 126, 0.386);
 }
+
 canvas {
     position: fixed;
 }
@@ -48,7 +52,7 @@ progress {
 }
 
 
-#ranking > h2 {
+#ranking>h2 {
     text-align: center;
     font-family: monospace;
     margin: 0;
@@ -61,9 +65,11 @@ progress {
         padding: 10px;
         padding-bottom: 0.8em;
     }
-    #ranking > h2 {
+
+    #ranking>h2 {
         font-size: 0.9rem;
     }
+
     .player-ranking {
         font-size: 0.8rem !important;
     }
@@ -89,9 +95,17 @@ progress {
 }
 
 @keyframes noWifi {
-    33.333% { transform: scale(0.7); }
-    66.666% { transform: scale(1); }
-    100% { transform: scale(0.7); }
+    33.333% {
+        transform: scale(0.7);
+    }
+
+    66.666% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(0.7);
+    }
 }
 
 
@@ -110,6 +124,7 @@ progress {
 .fa-fire-alt {
     color: red !important;
 }
+
 /* ------------ initial screen --------------- */
 .container {
     position: absolute;
@@ -146,17 +161,21 @@ progress {
 
 .actions-container {
     width: 70%;
-    margin:auto;
+    margin: auto;
 }
-.actions-container > input {
+
+.actions-container>input {
     width: -webkit-fill-available;
     padding: 10px;
     font-size: 15px;
+    border: solid 1px black;
 }
+
 .btns-container {
     display: flex;
     justify-content: space-between;
 }
+
 .btn {
     border: none;
     padding: 10px;
@@ -167,17 +186,24 @@ progress {
     font-family: monospace;
     cursor: pointer;
 }
+
 .btn-play {
     background-color: green;
 }
+
 .btn-spectate {
     background-color: rgb(220, 125, 0);
 }
 
+.btn-spectate:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .error-msg {
-    text-align: center; 
-    color: red; 
-    margin-top: 15px; 
+    text-align: center;
+    color: red;
+    margin-top: 15px;
 }
 
 @media screen and (max-width: 1000px) {
@@ -187,16 +213,20 @@ progress {
         top: calc(50vh - 40vh) !important;
         transform: none !important;
     }
-    .logo-container img{
+
+    .logo-container img {
         height: 40vh !important;
     }
-    .logo-container{
+
+    .logo-container {
         margin-bottom: 0 !important;
     }
+
     .blur-screen {
         width: 100vw !important;
     }
-    .disconnected-container > .logo-container {
+
+    .disconnected-container>.logo-container {
         margin-top: 0;
     }
 }
@@ -207,6 +237,7 @@ progress {
     left: -150%;
     top: 50%;
 }
+
 .dead-container .logo-container {
     margin-top: 60px;
 }
@@ -216,7 +247,8 @@ progress {
     left: -150%;
     top: 50%;
 }
-.disconnected-container  img {
+
+.disconnected-container img {
     margin-top: 50px;
 }
 
@@ -230,20 +262,33 @@ progress {
 }
 
 @keyframes loading {
-    25% { transform: rotate(90deg); }
-    50% { transform: rotate(180deg); }
-    75% { transform: rotate(270deg); }
-    100% { transform: rotate(360deg); }
+    25% {
+        transform: rotate(90deg);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    75% {
+        transform: rotate(270deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* --------------- joystick ------------------ */
 #joyStick {
     display: none;
 }
+
 .joy-container {
     position: absolute;
     top: 95%;
 }
+
 #joy-rotate {
     left: 96%;
     transform: translate(-100%, -100%);
@@ -251,6 +296,7 @@ progress {
     height: max-content;
     display: flex;
 }
+
 #joy-rotate div {
     width: inherit;
 }
@@ -259,6 +305,7 @@ progress {
     transform: translateY(-100%);
     left: 4%;
 }
+
 .btn-joy {
     padding: 0;
     margin: 0;
@@ -272,9 +319,11 @@ progress {
     margin: 10px;
     opacity: 0.7;
 }
+
 #mobile-gunshot {
     align-self: center;
 }
+
 #mobile-move {
     display: flex;
     flex-flow: column;
@@ -288,7 +337,18 @@ progress {
 
 /* ---------------- all classes --------------------- */
 
-.mt { margin-top: 20px; }
-.mb { margin-bottom: 20px; }
-.ml { margin-left: 20px; }
-.mr { margin-right: 20px; }
+.mt {
+    margin-top: 20px;
+}
+
+.mb {
+    margin-bottom: 20px;
+}
+
+.ml {
+    margin-left: 20px;
+}
+
+.mr {
+    margin-right: 20px;
+}
