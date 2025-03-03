@@ -24,7 +24,7 @@ Jogo de batalha de tanks multiplayer.
 
 ## 🚀 Preview <a id="preview"></a>
 
--> https://multiplayer-game.onrender.com
+-> https://tanksfight-server.saulofelipe.com.br
 
 ------------------------------------
 
@@ -38,9 +38,9 @@ Jogo de batalha de tanks multiplayer.
 
 ## 🎨 Layout <a id="layout"></a>
 
-<a href="https://multiplayer-game-saulo.herokuapp.com/"><img src="https://img.shields.io/badge/Multiplayer Game-blue"/></a>
+<a href="https://tanksfight-server.saulofelipe.com.br/"><img src="https://img.shields.io/badge/Multiplayer Game-blue"/></a>
 <img src="https://img.shields.io/badge/Backend-NodeJs-green">
-<p>*O Layout completo do game está disponível <a href="https://multiplayer-game.onrender.com">aqui</a>.</p>
+<p>*O Layout completo do game está disponível <a href="https://tanksfight-server.saulofelipe.com.br/">aqui</a>.</p>
 
 <img src="screen2.jpeg">
 <img src="screen1.jpeg">
